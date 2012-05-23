@@ -35,7 +35,7 @@ var Zombies = (function () {
       });
     }
 
-    setInterval(loop, 100);
+    setInterval(loop, 1000/50);
   }
 
   function initServer (_io, _physics) {
@@ -65,7 +65,7 @@ var Zombies = (function () {
   }
 
   function loop () {
-    physics.update(100);
+    physics.update(1000/50);
     renderer.render();
   }
 
