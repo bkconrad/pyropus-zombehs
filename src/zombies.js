@@ -4,6 +4,7 @@ var Zombies = (function () {
     , physics
 
     // client
+    , renderer
     , canvas
     , context
     , socket
@@ -16,12 +17,23 @@ var Zombies = (function () {
     io = _io;
   }
 
-  function initClient (_canvas, _io, _physics) {
+  function initClient (_canvas, _io, _physics, _renderer) {
     initShared(_io, _physics);
     canvas = _canvas;
     context = canvas.getContext('2d');
+    renderer = _renderer;
+    Renderer.init(context, physics);
 
     clientConnect();
+
+    physics.create({
+      x: Math.random(),
+      y: Math.random(),
+      xvel: Math.random(),
+      yvel: Math.random()
+    });
+
+    setInterval(loop, 100);
   }
 
   function initServer (_io, _physics) {
@@ -48,6 +60,11 @@ var Zombies = (function () {
   function clientConnect () {
     socket = io.connect(document.origin);
     setClientHandlers();
+  }
+
+  function loop () {
+    physics.update(100);
+    renderer.render();
   }
 
   return {

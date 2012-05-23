@@ -6,6 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
   canvas.height = 400;
   document.body.appendChild(canvas);
 
-  Zombies.initClient(canvas, io, SimplePhysics);
+  Zombies.initClient(canvas, io, SimplePhysics, Renderer);
 
 });
