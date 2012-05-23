@@ -11,8 +11,8 @@ Entity.prototype = {
   xvel: 0,
   yvel: 0,
   update: function (dt) {
-    this.x += this.xvel;
-    this.y += this.yvel;
+    this.x += this.xvel * dt / 1000;
+    this.y += this.yvel * dt / 1000;
   }
 };
 
