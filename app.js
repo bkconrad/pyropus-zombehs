@@ -12,7 +12,7 @@ function handler (req, res) {
   if (url == "/")
     url = "/index.html";
 
-  fs.readFile(__dirname + url,
+  fs.readFile(__dirname + "/public" + url,
   function (err, data) {
     if (err) {
       res.writeHead(500);
