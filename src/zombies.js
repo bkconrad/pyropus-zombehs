@@ -26,12 +26,14 @@ var Zombies = (function () {
 
     clientConnect();
 
-    physics.create({
-      x: Math.random(),
-      y: Math.random(),
-      xvel: Math.random(),
-      yvel: Math.random()
-    });
+    for (var i = 0; i < 20; i++) {
+      physics.create({
+        x: Math.random() * 200,
+        y: Math.random() * 200,
+        xvel: (Math.random() - .5) * 10,
+        yvel: (Math.random() - .5) * 10
+      });
+    }
 
     setInterval(loop, 100);
   }
