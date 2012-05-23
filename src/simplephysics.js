@@ -48,6 +48,11 @@ var SimplePhysics = (function () {
     }
   }
 
+  return {
+    update: update,
+    create: create
+  };
+
 })();
 
 try {
