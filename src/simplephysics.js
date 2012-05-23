@@ -11,8 +11,8 @@ Entity.prototype = {
   xvel: 0,
   yvel: 0,
   update: function () {
-    this.x += this.xvel;
-    this.y += this.yvel;
+    this.x += this.xvel * dt;
+    this.y += this.yvel * dt;
   }
 };
 
@@ -44,7 +44,7 @@ var SimplePhysics = (function () {
   function update (dt) {
     var i;
     for (i in entList) {
-      entList[i].update();
+      entList[i].update(dt);
     }
   }
 
