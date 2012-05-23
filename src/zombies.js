@@ -31,7 +31,9 @@ var Zombies = (function () {
         x: Math.random() * 200,
         y: Math.random() * 200,
         xvel: (Math.random() - .5) * 10,
-        yvel: (Math.random() - .5) * 10
+        yvel: (Math.random() - .5) * 10,
+        width: Math.random() * 20,
+        height: Math.random() * 20
       });
     }
 

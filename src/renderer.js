@@ -14,7 +14,9 @@ var Renderer = (function () {
   }
 
   function renderEntity (ent) {
-    context.fillRect(ent.x - 2, ent.y - 2, 5, 5);
+    var halfWidth = ent.width / 2;
+    var halfHeight = ent.height / 2;
+    context.fillRect(ent.x - halfWidth, ent.y - halfHeight, ent.width, ent.height);
   }
 
   function init (_context, _physics) {
