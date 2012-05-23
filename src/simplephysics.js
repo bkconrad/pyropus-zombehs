@@ -19,9 +19,15 @@ var SimplePhysics = (function () {
   var entList = []
     , gravity = 0
     ;
+
+  function create (data) {
+    var ent = new Entity(data);
+    return addEntity(ent);
+  }
   
   function addEntity (ent) {
     entList.push(ent);
+    return ent;
   }
 
   function dropEntity (ent) {
