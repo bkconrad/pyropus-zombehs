@@ -5,14 +5,21 @@ var app = require('http').createServer(handler)
 app.listen(1234);
 
 function handler (req, res) {
-  console.log(req);
 
-  var url = req.url.split("?")[0];
+  var url
+    , extension
+    , folder = "/public";
+
+  url = req.url.split("?")[0]; 
+  extension = url.split(".")[1]; 
 
   if (url == "/")
     url = "/index.html";
 
-  fs.readFile(__dirname + "/public" + url,
+  if (extension == "js")
+    folder = "/src";
+
+  fs.readFile(__dirname + folder + url,
   function (err, data) {
     if (err) {
       res.writeHead(500);
