@@ -1,6 +1,7 @@
 var Zombies = (function () {
     // shared
   var io
+    , physics
 
     // client
     , canvas
@@ -10,19 +11,21 @@ var Zombies = (function () {
     // server
   ;
 
-  function initShared () {
+  function initShared (_io, _physics) {
+    physics = _physics;
+    io = _io;
   }
 
-  function initClient (_canvas, _io) {
-    io = _io;
+  function initClient (_canvas, _io, _physics) {
+    initShared(_io, _physics);
     canvas = _canvas;
     context = canvas.getContext('2d');
 
     clientConnect();
   }
 
-  function initServer (_io) {
-    io = _io;
+  function initServer (_io, _physics) {
+    initShared(_io, _physics);
     io.sockets.on('connection', serverHandler);
   }
 
