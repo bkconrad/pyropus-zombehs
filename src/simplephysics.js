@@ -42,6 +42,10 @@ var SimplePhysics = (function () {
   }
 
   function update (dt) {
+    var i;
+    for (i in entList) {
+      entList[i].update();
+    }
   }
 
 })();
