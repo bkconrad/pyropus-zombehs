@@ -1,51 +1,57 @@
-var Zombies = {
-  // shared
-  io: undefined,
+var Zombies = (function () {
+    // shared
+  var io
 
-  // client
-  canvas: undefined,
-  context: undefined,
-  socket: undefined,
+    // client
+    , canvas
+    , context
+    , socket
 
-  // server
+    // server
+  ;
 
-  initShared: function () {
-  },
+  function initShared () {
+  }
 
-  initClient: function (canvas, io) {
-    this.io = io;
-    this.canvas = canvas;
-    this.context = this.canvas.getContext('2d');
+  function initClient (_canvas, _io) {
+    io = _io;
+    canvas = _canvas;
+    context = canvas.getContext('2d');
 
-    this.clientConnect();
-  },
+    clientConnect();
+  }
 
-  initServer: function (io) {
-    this.io = io;
-    this.io.sockets.on('connection', this.serverHandler);
-  },
+  function initServer (_io) {
+    io = _io;
+    io.sockets.on('connection', serverHandler);
+  }
 
-  serverHandler: function (socket) {
+  function serverHandler (socket) {
     socket.emit('news', { hello: 'world' });
     socket.on('my other event', function (data) {
       console.log(data);
     });
-  },
+  }
 
-  setClientHandlers: function () {
-    if(!this.socket)
+  function setClientHandlers () {
+    if(!socket)
       throw Error("Not connected");
 
-    this.socket.on('news', function () {
-      this.context.fillText("Hello!", 20, 20);
+    socket.on('news', function () {
+      context.fillText("Hello!", 20, 20);
     });
-  },
-
-  clientConnect: function () {
-    this.socket = io.connect(document.origin);
-    this.setClientHandlers();
   }
-};
+
+  function clientConnect () {
+    socket = io.connect(document.origin);
+    setClientHandlers();
+  }
+
+  return {
+    initClient: initClient,
+    initServer: initServer
+  };
+})();
 
 try {
   module.exports = Zombies;
