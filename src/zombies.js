@@ -16,7 +16,6 @@ var Zombies = {
     this.io = io;
     this.canvas = canvas;
     this.context = this.canvas.getContext('2d');
-    this.context.fillText("Hello!", 20, 20);
 
     this.clientConnect();
   },
@@ -33,11 +32,18 @@ var Zombies = {
     });
   },
 
-  clientHandlers: function () {
+  setClientHandlers: function () {
+    if(!this.socket)
+      throw Error("Not connected");
+
+    this.socket.on('news', function () {
+      this.context.fillText("Hello!", 20, 20);
+    });
   },
 
   clientConnect: function () {
     this.socket = io.connect(document.origin);
+    this.setClientHandlers();
   }
 };
 
