@@ -1,4 +1,8 @@
-function Entity () {
+function Entity (data) {
+  var p;
+  for (p in data) {
+    this[p] = data[p];
+  }
 }
 
 Entity.prototype = {
