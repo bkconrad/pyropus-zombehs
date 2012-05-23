@@ -10,8 +10,9 @@ Entity.prototype = {
   y: 0,
   xvel: 0,
   yvel: 0,
-  render: function () {
-    console.log(x,y,xvel,yvel);
+  update: function () {
+    this.x += this.xvel;
+    this.y += this.yvel;
   }
 };
 
