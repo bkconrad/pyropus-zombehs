@@ -28,12 +28,12 @@ Entity.prototype = {
   bounds: function () {
     return {
       xy1: {
-        x: this.x - width/2,
-        y: this.y - height/2
+        x: this.x - this.width/2,
+        y: this.y - this.height/2
       },
       xy2: {
-        x: this.x + width/2,
-        y: this.y + height/2
+        x: this.x + this.width/2,
+        y: this.y + this.height/2
       }
     };
   }
