@@ -20,6 +20,7 @@ Entity.prototype = {
 
 var SimplePhysics = (function () {
   var entList = []
+    , collisionList = []
     , gravity = 0
     ;
 
@@ -47,6 +48,25 @@ var SimplePhysics = (function () {
     var i;
     for (i in entList) {
       entList[i].update(dt);
+      findCollisions(entList[i]);
+    }
+  }
+
+  function findCollisions (ent) {
+    for (var i in entList) {
+      if (testCollision(ent, entList[i]))
+        console.log(ent, "hit", entList[i]);
+    }
+  }
+
+  function testCollision (ent1, ent2) {
+    if (ent1 == ent2)
+      return false;
+
+    if ((Math.abs(ent1.x - ent2.x) < (ent1.width + ent2.width) / 2) &&
+        (Math.abs(ent1.y - ent2.y) < (ent1.height + ent2.height) / 2)) {
+      collisionList.push([ent1, ent2]);
+      return true;
     }
   }
 
