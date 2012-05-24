@@ -15,6 +15,23 @@ Entity.prototype = {
   update: function (dt) {
     this.x += this.xvel * dt / 1000;
     this.y += this.yvel * dt / 1000;
+  },
+  /**
+   * @brief get AABB
+   * @return an object with two point properties (xy1 and xy2) representing the
+   * bounding box of this Entity.
+   */
+  bounds: function () {
+    return {
+      xy1: {
+        x: this.x - width/2,
+        y: this.y - height/2
+      },
+      xy2: {
+        x: this.x + width/2,
+        y: this.y + height/2
+      }
+    };
   }
 };
 
