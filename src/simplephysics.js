@@ -16,7 +16,11 @@ Entity.prototype = {
   yvel: 0,
   width: 0,
   height: 0,
+  static: false,
   update: function (dt) {
+    if (this.static)
+      return;
+
     this.x += this.xvel * dt / 1000;
     this.y += this.yvel * dt / 1000;
   },

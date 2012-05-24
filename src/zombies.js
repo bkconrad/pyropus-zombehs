@@ -33,7 +33,8 @@ var Zombies = (function () {
         xvel: (Math.random() - .5) * 10,
         yvel: (Math.random() - .5) * 10,
         width: Math.random() * 20,
-        height: Math.random() * 20
+        height: Math.random() * 20,
+        static: Math.random() > .5
       });
     }
 
