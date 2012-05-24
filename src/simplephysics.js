@@ -3,7 +3,11 @@ function Entity (data) {
   for (p in data) {
     this[p] = data[p];
   }
+
+  this.id = Entity.index++;
 }
+
+Entity.index = 1;
 
 Entity.prototype = {
   x: 0,
