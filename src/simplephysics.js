@@ -67,28 +67,58 @@ var SimplePhysics = (function () {
 
   function update (dt) {
     var i;
+    collisionList = [];
+
+    // update loop
     for (i in entList) {
       entList[i].update(dt);
+    }
+
+    // collision detection loop
+    for (i in entList) {
       findCollisions(entList[i]);
+    }
+
+    // handle collisions
+    for (i in collisionList) {
+      dropEntity(collisionList[i][0]);
+      dropEntity(collisionList[i][1]);
     }
   }
 
   function findCollisions (ent) {
-    for (var i in entList) {
-      if (testCollision(ent, entList[i]))
-        console.log(ent, "hit", entList[i]);
+    var i;
+    for (i in entList) {
+      // comparing id's is a simple way to only add each collision one time.
+      if (ent.id < entList[i].id && testCollision(ent, entList[i]))
+        collisionList.push([ent, entList[i]]);
     }
   }
 
+  /**
+   * @brief checks intersection of the AABB of two entities
+   * @returns true if a collision is detected
+   */
   function testCollision (ent1, ent2) {
+    var aabb1 = ent1.bounds(),
+        aabb2 = ent2.bounds();
+
     if (ent1 == ent2)
       return false;
 
-    if ((Math.abs(ent1.x - ent2.x) < (ent1.width + ent2.width) / 2) &&
-        (Math.abs(ent1.y - ent2.y) < (ent1.height + ent2.height) / 2)) {
-      collisionList.push([ent1, ent2]);
-      return true;
-    }
+    if (aabb1.xy1.x > aabb2.xy2.x)
+      return false;
+
+    if (aabb1.xy1.y > aabb2.xy2.y)
+      return false;
+
+    if (aabb1.xy2.x < aabb2.xy1.x)
+      return false;
+
+    if (aabb1.xy2.y < aabb2.xy1.y)
+      return false;
+
+    return true;
   }
 
   return {
