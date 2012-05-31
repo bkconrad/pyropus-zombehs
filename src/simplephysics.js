@@ -17,6 +17,8 @@ Entity.prototype = {
   width: 0,
   height: 0,
   static: false,
+  listener: false,
+  handlers: [],
   update: function (dt) {
     if (this.static)
       return;
@@ -40,6 +42,26 @@ Entity.prototype = {
         y: this.y + this.height/2
       }
     };
+  },
+  /**
+   * @brief add a handler function to be executed when this ent collides with
+   * another. the handler function receives a reference to the other ent as its
+   * first argument, and is called as with this ent as "this"
+   */
+  addHandler: function (handler) {
+    this.listener = true;
+    if (typeof handler === 'function') {
+      this.handlers.push(handler);
+    }
+  },
+  /**
+   * @brief call all collision handlers on this object
+   */
+  collide: function (ent) {
+    var i;
+    for (i in this.handlers) {
+      this.handlers[i].call(this, ent);
+    }
   }
 };
 
@@ -70,7 +92,7 @@ var SimplePhysics = (function () {
   }
 
   function update (dt) {
-    var i;
+    var i, collision;
     collisionList = [];
 
     // update loop
@@ -85,17 +107,54 @@ var SimplePhysics = (function () {
 
     // handle collisions
     for (i in collisionList) {
-      dropEntity(collisionList[i][0]);
-      dropEntity(collisionList[i][1]);
+      collision = collisionList[i];
+      collision[0].collide(collision[1]);
+      collision[1].collide(collision[0]);
+      
+      // collision[0].static XOR collision[1].static
+      if (collision[0].static ? !collision[1].static : collision[1].static) {
+      }
     }
   }
 
+  /**
+   * @brief add a collision between two entities if one hasn't been added yet
+   * @return true on success, false on collision already exists
+   */
+  function addCollision(ent1, ent2) {
+    var id,
+        i;
+
+    // create a unique & reproducible id for enforcing collission uniqueness
+    if (ent1.id < ent2.id) {
+      id = (ent1.id << 16) + ent2.id;
+    } else {
+      id = (ent2.id << 16) + ent1.id;
+    }
+
+    // bail if event has already been added
+    for (i in collisionList) {
+      if (id == collisionList[i].id)
+        return false;
+    }
+
+    collisionList.push({
+      0: ent1,
+      1: ent2,
+      id: id
+    });
+
+    return true;
+  }
+
   function findCollisions (ent) {
+    if (!ent.listener)
+      return;
     var i;
     for (i in entList) {
-      // comparing id's is a simple way to only add each collision one time.
-      if (ent.id < entList[i].id && testCollision(ent, entList[i]))
-        collisionList.push([ent, entList[i]]);
+      if (testCollision(ent, entList[i])) {
+        addCollision(ent, entList[i]);
+      }
     }
   }
 
