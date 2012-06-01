@@ -2,7 +2,10 @@ var Zombies = (function () {
     // shared
   var io
     , physics
+    , frameCount
     , isServer
+    , interval = 1000/50
+    , startTime
 
     // client
     , renderer
@@ -16,6 +19,8 @@ var Zombies = (function () {
   function initShared (_io, _physics) {
     physics = _physics;
     io = _io;
+    frameCount = 1;
+    startTime = new Date().getTime();
   }
 
   function initClient (_canvas, _io, _physics, _renderer) {
@@ -71,8 +76,15 @@ var Zombies = (function () {
   }
 
   function loop () {
-    physics.update(1000/50);
-    renderer.render();
+    var now = new Date().getTime();
+
+    while (now > startTime + interval * frameCount) {
+      physics.update(interval);
+      frameCount++;
+    }
+
+    if (!isServer)
+      renderer.render();
   }
 
   return {
