@@ -6,8 +6,9 @@ var Renderer = (function () {
     ;
 
   function render () {
-    clear();
     var i;
+    clear();
+
     for (i in physics.entList) {
       renderEntity(physics.entList[i]);
     }
