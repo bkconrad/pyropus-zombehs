@@ -2,7 +2,7 @@ var Zombies = (function () {
 
   function Event (type, frame, data) {
     this.type = type;
-    this.frame = frame || frameCount;
+    this.frame = frame || frameCount + 2;
     this.data = data || null;
     this.from = null;
   }
@@ -12,6 +12,7 @@ var Zombies = (function () {
    */
   Event.prototype.submit = function () {
     socket.emit('command', this);
+    return this;
   };
 
   /**
@@ -23,6 +24,7 @@ var Zombies = (function () {
       if (this.from != io.sockets[s].player.id)
         io.sockets[s].emit('command', this);
     }
+    return this;
   };
 
   /**
@@ -30,6 +32,7 @@ var Zombies = (function () {
    */
   Event.prototype.broadcast = function () {
     io.sockets.emit('command', this);
+    return this;
   };
 
   /**
@@ -37,12 +40,18 @@ var Zombies = (function () {
    */
   Event.prototype.send = function (socket) {
     socket.emit('command', this);
+    return this;
   };
+
+  Event.prototype.add = function () {
+    eventQueue.push(this);
+    return this;
+  }
 
   function Player (data) {
     var i;
     data = data || {};
-    if (data.id) {
+    if (data.id >= 0) {
       this.id = data.id;
     } else {
       for (i = 0; i < players.length; i++) {
@@ -70,12 +79,12 @@ var Zombies = (function () {
   }
 
   Player.prototype.add = function () {
-    players[this.id] == this;
+    players[this.id] = this;
   };
 
   Player.prototype.drop = function () {
     var i;
-    physics.dropEntity(this.ent);
+    physics.drop(this.ent);
     players[this.id] = undefined;
   };
 
@@ -139,20 +148,31 @@ var Zombies = (function () {
   function serverHandler (socket) {
 
     var ev
-      , i;
+      , i
+      , player
+      ;
 
     socket.emit('time', { frame: frameCount });
 
-    for (i in players) {
-      new Event('join', frameCount + 10, players[i]).send(socket);
+    for (i = 0; i < players.length; i++) {
+      if (players[i])
+        new Event('join', false, players[i]).send(socket);
     }
 
-    ev = new Event('join', frameCount + 10, new Player());
+    player = new Player();
+
+    socket.pid = player.id;
+
+    ev = new Event('join', false, player);
     ev.broadcast();
-    eventQueue.push(ev);
+    ev.add();
 
     socket.on('command', function () {
       // TODO: something
+    });
+
+    socket.on('disconnect', function () {
+      new Event('part', false, { id: socket.pid }).add().broadcast();
     });
 
   }
@@ -173,7 +193,7 @@ var Zombies = (function () {
     socket.on('command', function (data) {
       console.log(data);
       console.log(frameCount);
-      eventQueue.push(data);
+      new Event(data.type, data.frame, data.data).add();
       console.log(eventQueue);
     });
 
@@ -225,12 +245,11 @@ var Zombies = (function () {
   function handleEvent (ev) {
     switch (ev.type) {
       case 'join':
-        players.push(new Player (ev.data));
-        console.log(ev);
+        new Player (ev.data).add();
       break;
 
       case 'part':
-        
+        players[ev.data.id].drop();
       break;
 
       default:

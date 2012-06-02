@@ -187,6 +187,7 @@ var SimplePhysics = (function () {
   return {
     entList: entList,
     update: update,
+    drop: dropEntity,
     create: create
   };
 
