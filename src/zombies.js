@@ -32,6 +32,13 @@ var Zombies = (function () {
     io.sockets.emit('command', this);
   };
 
+  /**
+   * send event to a particular socket
+   */
+  Event.prototype.send = function (socket) {
+    socket.emit('command', this);
+  };
+
   function Player (data) {
     data = data || {};
     this.id = data.id || Player.id++
@@ -110,9 +117,14 @@ var Zombies = (function () {
 
   function serverHandler (socket) {
 
-    var ev;
+    var ev
+      , i;
 
     socket.emit('time', { frame: frameCount });
+
+    for (i in players) {
+      new Event('join', frameCount + 10).send(socket);
+    }
 
     ev = new Event('join', frameCount + 10);
     ev.broadcast();
