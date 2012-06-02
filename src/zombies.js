@@ -40,16 +40,23 @@ var Zombies = (function () {
   };
 
   function Player (data) {
+    var i;
     data = data || {};
-    this.id = data.id || Player.id++
+    if (data.id) {
+      this.id = data.id;
+    } else {
+      for (i = 0; i < players.length; i++) {
+        if (players[i] == undefined)
+          break;
+      }
+      this.id = i;
+    }
+
     this.name = data.name || "player" + new Date().getTime();
 
     if (data.ent) {
-
       this.ent = physics.create(data.ent);
-
     } else {
-
       this.ent = physics.create({
         x: Math.random() * 200,
         y: Math.random() * 200,
@@ -62,9 +69,17 @@ var Zombies = (function () {
     }
   }
 
-  Player.id = 1;
+  Player.prototype.add = function () {
+    players[this.id] == this;
+  };
 
-    // shared
+  Player.prototype.drop = function () {
+    var i;
+    physics.dropEntity(this.ent);
+    players[this.id] = undefined;
+  };
+
+  // shared
   var io
     , physics
     , frameCount
@@ -212,6 +227,10 @@ var Zombies = (function () {
       case 'join':
         players.push(new Player (ev.data));
         console.log(ev);
+      break;
+
+      case 'part':
+        
       break;
 
       default:
