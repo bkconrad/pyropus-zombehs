@@ -1,10 +1,10 @@
 var Zombies = (function () {
 
-  function Event (type, frame) {
+  function Event (type, frame, data) {
     this.type = type;
     this.frame = frame || frameCount;
+    this.data = data || null;
     this.from = null;
-    this.data = null;
   }
 
   /**
@@ -43,17 +43,23 @@ var Zombies = (function () {
     data = data || {};
     this.id = data.id || Player.id++
     this.name = data.name || "player" + new Date().getTime();
-    this.ent = physics.create({
-      x: Math.random() * 200,
-      y: Math.random() * 200,
-      xvel: (Math.random() - .5) * 10,
-      yvel: (Math.random() - .5) * 10,
-      width: Math.random() * 20,
-      height: Math.random() * 20,
-      static: Math.random() > .5
-    });
 
-    players.push(this);
+    if (data.ent) {
+
+      this.ent = physics.create(data.ent);
+
+    } else {
+
+      this.ent = physics.create({
+        x: Math.random() * 200,
+        y: Math.random() * 200,
+        xvel: (Math.random() - .5) * 10,
+        yvel: (Math.random() - .5) * 10,
+        width: Math.random() * 20,
+        height: Math.random() * 20,
+        static: Math.random() > .5
+      });
+    }
   }
 
   Player.id = 1;
@@ -123,10 +129,10 @@ var Zombies = (function () {
     socket.emit('time', { frame: frameCount });
 
     for (i in players) {
-      new Event('join', frameCount + 10).send(socket);
+      new Event('join', frameCount + 10, players[i]).send(socket);
     }
 
-    ev = new Event('join', frameCount + 10);
+    ev = new Event('join', frameCount + 10, new Player());
     ev.broadcast();
     eventQueue.push(ev);
 
@@ -204,8 +210,9 @@ var Zombies = (function () {
   function handleEvent (ev) {
     switch (ev.type) {
       case 'join':
-          new Player (ev.data);
-        break;
+        players.push(new Player (ev.data));
+        console.log(ev);
+      break;
 
       default:
         throw Error ("Unhandled event " + ev.type);
