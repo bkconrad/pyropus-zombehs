@@ -16,14 +16,11 @@ var Zombies = (function () {
   };
 
   /**
-   * send event to all players except originator
+   * send event to all sockets except the one passed
    */
-  Event.prototype.relay = function () {
-    var s;
-    for (s = 0; i < io.sockets.length; i++) {
-      if (this.from != io.sockets[s].player.id)
-        io.sockets[s].emit('command', this);
-    }
+  Event.prototype.relay = function (socket) {
+    var i;
+    socket.broadcast.emit('command', this);
     return this;
   };
 
@@ -103,6 +100,7 @@ var Zombies = (function () {
     , canvas
     , context
     , socket
+    , me
 
     // server
   ;
@@ -152,8 +150,10 @@ var Zombies = (function () {
       , player
       ;
 
+    // synchronize watches
     socket.emit('time', { frame: frameCount });
 
+    // send player list to new player
     for (i = 0; i < players.length; i++) {
       if (players[i])
         new Event('join', false, players[i]).send(socket);
@@ -163,9 +163,14 @@ var Zombies = (function () {
 
     socket.pid = player.id;
 
+    // relay the join message to all players but the new one
     ev = new Event('join', false, player);
-    ev.broadcast();
     ev.add();
+    ev.relay(socket);
+
+    // tell new player who he is
+    ev.data.identity = true;
+    ev.send(socket);
 
     socket.on('command', function () {
       // TODO: something
@@ -245,7 +250,14 @@ var Zombies = (function () {
   function handleEvent (ev) {
     switch (ev.type) {
       case 'join':
+
         new Player (ev.data).add();
+
+        if (ev.data.identity) {
+          me = players[ev.data.id];
+          console.log("found myself", me);
+        }
+
       break;
 
       case 'part':
