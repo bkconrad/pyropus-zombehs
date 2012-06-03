@@ -119,6 +119,7 @@ var Zombies = (function () {
     , me_
     , lastDigest
     , serverDigest
+    , lastFrame
 
     // server
   ;
@@ -139,6 +140,7 @@ var Zombies = (function () {
     context = canvas.getContext('2d');
     renderer = _renderer;
     Renderer.init(context, physics);
+    lastFrame = 0;
 
     clientConnect();
 
@@ -269,8 +271,11 @@ var Zombies = (function () {
       frameCount++;
     }
 
-    if (!isServer)
-      renderer.render();
+    if (!isServer) {
+      now = new Date().getTime();
+      renderer.render(now - lastFrame);
+      lastFrame = now;
+    }
   }
 
   function checkEvents () {
