@@ -117,6 +117,8 @@ var Zombies = (function () {
     , context
     , socket
     , me_
+    , lastDigest
+    , serverDigest
 
     // server
   ;
@@ -141,6 +143,15 @@ var Zombies = (function () {
     clientConnect();
 
     setInterval(loop, interval);
+
+    // digest testing
+    /*
+    setInterval(function () {
+      socket.emit('digest');
+      lastDigest = null;
+      serverDigest = null;
+    }, 5000);
+    */
   }
 
   function me (player) {
@@ -203,6 +214,13 @@ var Zombies = (function () {
       // TODO: something
     });
 
+    socket.on('digest', function (data) {
+      var targetFrame = frameCount + (200 - (frameCount % 100));
+      var ev = new Event('digest', targetFrame);
+      ev.from = socket.pid;
+      ev.add().send(socket);
+    });
+
     socket.on('disconnect', function () {
       new Event('part', false, { id: socket.pid }).add().broadcast();
     });
@@ -227,6 +245,10 @@ var Zombies = (function () {
       console.log(frameCount);
       new Event(data.type, data.frame, data.data).add();
       console.log(eventQueue);
+    });
+
+    socket.on('digest check', function (data) {
+      serverDigest = data;
     });
 
     socket.on('connect', function () {
@@ -289,6 +311,26 @@ var Zombies = (function () {
 
       case 'part':
         players[ev.data.id].drop();
+      break;
+
+      case 'digest':
+        if (isServer) {
+          if (players[ev.from].socket)
+            players[ev.from].socket.emit('digest check', {
+              digest: physics.digest(),
+              frame: frameCount
+            });
+          else
+            console.log(players[ev.from]);
+        } else {
+          lastDigest = {
+              digest: physics.digest(),
+              frame: frameCount
+          };
+
+          if (serverDigest)
+            console.log('check', lastDigest, serverDigest);
+        }
       break;
 
       default:

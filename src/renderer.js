@@ -10,7 +10,8 @@ var Renderer = (function () {
     clear();
 
     for (i in physics.entList) {
-      renderEntity(physics.entList[i]);
+      if (physics.entList[i])
+        renderEntity(physics.entList[i]);
     }
   }
 

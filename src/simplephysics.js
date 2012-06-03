@@ -1,75 +1,89 @@
-function Entity (data) {
-  var p;
-  for (p in data) {
-    this[p] = data[p];
-  }
-
-  this.id = Entity.index++;
-}
-
-Entity.index = 1;
-
-Entity.prototype = {
-  x: 0,
-  y: 0,
-  xvel: 0,
-  yvel: 0,
-  width: 0,
-  height: 0,
-  static: false,
-  listener: false,
-  handlers: [],
-  update: function (dt) {
-    if (this.static)
-      return;
-
-    this.x += this.xvel * dt / 1000;
-    this.y += this.yvel * dt / 1000;
-  },
-  /**
-   * @brief get AABB
-   * @return an object with two point properties (xy1 and xy2) representing the
-   * bounding box of this Entity.
-   */
-  bounds: function () {
-    return {
-      xy1: {
-        x: this.x - this.width/2,
-        y: this.y - this.height/2
-      },
-      xy2: {
-        x: this.x + this.width/2,
-        y: this.y + this.height/2
-      }
-    };
-  },
-  /**
-   * @brief add a handler function to be executed when this ent collides with
-   * another. the handler function receives a reference to the other ent as its
-   * first argument, and is called as with this ent as "this"
-   */
-  addHandler: function (handler) {
-    this.listener = true;
-    if (typeof handler === 'function') {
-      this.handlers.push(handler);
-    }
-  },
-  /**
-   * @brief call all collision handlers on this object
-   */
-  collide: function (ent) {
-    var i;
-    for (i in this.handlers) {
-      this.handlers[i].call(this, ent);
-    }
-  }
-};
-
 var SimplePhysics = (function () {
+
+  /**
+   * A physical entity
+   */
+  function Entity (data) {
+    var p, i;
+    if (data) {
+      for (p in data) {
+        this[p] = data[p];
+      }
+    }
+
+    if (!(this.id >= 0)) {
+
+      for (i = 0; i < entList.length; i++) {
+        if (!entList[i])
+          break;
+      }
+
+      this.id = i;
+    }
+  }
+
+  Entity.prototype = {
+    x: 0,
+    y: 0,
+    xvel: 0,
+    yvel: 0,
+    width: 0,
+    height: 0,
+    static: false,
+    listener: false,
+    handlers: [],
+    id: undefined,
+    update: function (dt) {
+      if (this.static)
+        return;
+
+      this.x += this.xvel * dt / 1000;
+      this.y += this.yvel * dt / 1000;
+    },
+    /**
+     * @brief get AABB
+     * @return an object with two point properties (xy1 and xy2) representing the
+     * bounding box of this Entity.
+     */
+    bounds: function () {
+      return {
+        xy1: {
+          x: this.x - this.width/2,
+          y: this.y - this.height/2
+        },
+        xy2: {
+          x: this.x + this.width/2,
+          y: this.y + this.height/2
+        }
+      };
+    },
+    /**
+     * @brief add a handler function to be executed when this ent collides with
+     * another. the handler function receives a reference to the other ent as its
+     * first argument, and is called as with this ent as "this"
+     */
+    addHandler: function (handler) {
+      this.listener = true;
+      if (typeof handler === 'function') {
+        this.handlers.push(handler);
+      }
+    },
+    /**
+     * @brief call all collision handlers on this object
+     */
+    collide: function (ent) {
+      var i;
+      for (i in this.handlers) {
+        this.handlers[i].call(this, ent);
+      }
+    }
+  };
+
   var entList = []
     , collisionList = []
     , gravity = 0
     ;
+
 
   function create (data) {
     var ent = new Entity(data);
@@ -77,18 +91,12 @@ var SimplePhysics = (function () {
   }
   
   function addEntity (ent) {
-    entList.push(ent);
+    entList[ent.id] = ent;
     return ent;
   }
 
   function dropEntity (ent) {
-    var i;
-    for (i in entList) {
-      if (entList[i] == ent) {
-        entList.splice(i, 1);
-        return;
-      }
-    }
+    entList[ent.id] = undefined;
   }
 
   function update (dt) {
@@ -97,12 +105,14 @@ var SimplePhysics = (function () {
 
     // update loop
     for (i in entList) {
-      entList[i].update(dt);
+      if (entList[i])
+        entList[i].update(dt);
     }
 
     // collision detection loop
     for (i in entList) {
-      findCollisions(entList[i]);
+      if (entList[i])
+        findCollisions(entList[i]);
     }
 
     // handle collisions
@@ -184,10 +194,27 @@ var SimplePhysics = (function () {
     return true;
   }
 
+  /**
+   * Returns a digest of the physics state for validation
+   */
+  function digest () {
+    var i
+      , result = 0xFFFFFFFF;
+      ;
+    for (i = 0; i < entList.length; i++) {
+      result ^= entList[i].x;
+      result ^= entList[i].y;
+      result ^= entList[i].xvel;
+      result ^= entList[i].yvel;
+    }
+    return result;
+  }
+
   return {
     entList: entList,
     update: update,
     drop: dropEntity,
+    digest: digest,
     create: create
   };
 
