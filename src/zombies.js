@@ -4,7 +4,7 @@ var Zombies = (function () {
     this.type = type;
     this.frame = frame || frameCount + 2;
     this.data = data || null;
-    this.from = null;
+    this.from = me_ != undefined ? me_.id : undefined;
   }
 
   /**
@@ -85,7 +85,9 @@ var Zombies = (function () {
 
   Player.prototype.add = function () {
     players[this.id] = this;
-    this.sprite = renderer.add(this.ent);
+
+    if (!isServer)
+      this.sprite = renderer.add(this.ent);
   };
 
   Player.prototype.serialize = function () {
@@ -100,7 +102,8 @@ var Zombies = (function () {
   Player.prototype.drop = function () {
     var i;
     physics.drop(this.ent);
-    renderer.drop(this.sprite);
+    if (!isServer)
+      renderer.drop(this.sprite);
     players[this.id] = undefined;
   };
 
@@ -148,6 +151,8 @@ var Zombies = (function () {
     clientConnect();
 
     setInterval(loop, interval);
+
+    window.onkeydown = keyHandler;
 
     // digest testing
     /*
@@ -215,8 +220,13 @@ var Zombies = (function () {
     ev.data.socket = socket;
     ev.add();
 
-    socket.on('command', function () {
-      // TODO: something
+    socket.on('command', function (data) {
+      var ev = new Event(data.type, false, data.data);
+      ev.frame = frameCount + 2;
+      ev.from = socket.pid;
+      ev.relay(socket);
+      ev.add();
+      console.log('relaying', ev);
     });
 
     socket.on('digest', function (data) {
@@ -248,7 +258,9 @@ var Zombies = (function () {
     socket.on('command', function (data) {
       console.log(data);
       console.log(frameCount);
-      new Event(data.type, data.frame, data.data).add();
+      var ev = new Event(data.type, data.frame, data.data);
+      ev.from = data.from;
+      ev.add();
       console.log(eventQueue);
     });
 
@@ -317,6 +329,10 @@ var Zombies = (function () {
 
       break;
 
+      case 'move':
+        players[ev.from].ent.xvel = 20 * ev.data.dir;
+      break;
+
       case 'part':
         players[ev.data.id].drop();
       break;
@@ -343,6 +359,22 @@ var Zombies = (function () {
 
       default:
         throw Error ("Unhandled event " + ev.type);
+    }
+  }
+
+  function keyHandler (ev) {
+    console.log(ev);
+    switch (ev.which) {
+      case 65:
+        new Event('move', false, {dir: -1}).add().submit();
+      break;
+
+      case 68:
+        new Event('move', false, {dir: 1}).add().submit();
+      break;
+
+      default:
+      break;
     }
   }
 
