@@ -22,6 +22,9 @@ function handler (req, res) {
   if (extension == "js")
     folder = "/src";
 
+  if (url.split('/')[1] == 'lib')
+    folder = '';
+
   fs.readFile(__dirname + folder + url,
   function (err, data) {
     if (err) {
