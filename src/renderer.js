@@ -4,6 +4,7 @@ var Renderer = (function () {
     , physics
     , width
     , height
+    , offset = { x: 0, y: 0}
     ;
 
   var spritesheet = new anima.SpriteSheet({
@@ -32,9 +33,17 @@ var Renderer = (function () {
       this.draw(this._ent.x - halfWidth, this._ent.y - halfHeight, context);
   };
 
+  function center (pos) {
+    offset.x = pos.x;
+    offset.y = pos.y;
+  }
+
   function render (deltaTime) {
     var i;
     clear();
+
+    context.save();
+    context.translate(width/2 - offset.x, height/2 - offset.y);
 
     for (i in sprites) {
       if (sprites[i]) {
@@ -42,6 +51,8 @@ var Renderer = (function () {
         sprites[i].drawSelf();
       }
     }
+
+    context.restore();
   }
 
   function init (_context, _physics) {
@@ -77,6 +88,7 @@ var Renderer = (function () {
     init: init,
     add: add,
     drop: drop,
+    center: center,
     render: render
   };
 

@@ -294,6 +294,7 @@ var Zombies = (function () {
     }
 
     if (!isServer) {
+      renderer.center(me().ent); 
       now = new Date().getTime();
       renderer.render(now - lastFrame);
       lastFrame = now;
