@@ -85,12 +85,14 @@ var Zombies = (function () {
 
   Player.prototype.add = function () {
     players[this.id] = this;
+    this.sprite = renderer.add(this.ent);
   };
 
   Player.prototype.serialize = function () {
     return {
       id: this.id,
       ent: this.ent,
+      sprite: this.sprite,
       name: this.name
     };
   };
@@ -98,6 +100,7 @@ var Zombies = (function () {
   Player.prototype.drop = function () {
     var i;
     physics.drop(this.ent);
+    renderer.drop(this.sprite);
     players[this.id] = undefined;
   };
 
