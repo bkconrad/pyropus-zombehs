@@ -59,6 +59,7 @@ var Zombies = (function () {
     }
 
     this.name = data.name || "player" + new Date().getTime();
+    this.socket = data.socket || null;
 
     if (data.ent) {
       this.ent = physics.create(data.ent);
@@ -84,6 +85,14 @@ var Zombies = (function () {
 
   Player.prototype.add = function () {
     players[this.id] = this;
+  };
+
+  Player.prototype.serialize = function () {
+    return {
+      id: this.id,
+      ent: this.ent,
+      name: this.name
+    };
   };
 
   Player.prototype.drop = function () {
@@ -171,7 +180,7 @@ var Zombies = (function () {
     // send player list to new player
     for (i = 0; i < players.length; i++) {
       if (players[i])
-        new Event('join', false, players[i]).send(socket);
+        new Event('join', false, players[i].serialize()).send(socket);
     }
 
     player = new Player();
@@ -180,13 +189,15 @@ var Zombies = (function () {
     socket.pid = player.id;
 
     // relay the join message to all players but the new one
-    ev = new Event('join', false, player);
-    ev.add();
+    ev = new Event('join', false, player.serialize());
     ev.relay(socket);
 
     // tell new player who he is
     ev.data.identity = true;
     ev.send(socket);
+
+    ev.data.socket = socket;
+    ev.add();
 
     socket.on('command', function () {
       // TODO: something
