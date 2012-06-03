@@ -75,6 +75,13 @@ var Zombies = (function () {
     }
   }
 
+  /**
+   * reserve a spot for this player without adding him to the player list
+   */
+  Player.prototype.reserve = function () {
+    players[this.id] = true;
+  }
+
   Player.prototype.add = function () {
     players[this.id] = this;
   };
@@ -100,7 +107,7 @@ var Zombies = (function () {
     , canvas
     , context
     , socket
-    , me
+    , me_
 
     // server
   ;
@@ -125,6 +132,14 @@ var Zombies = (function () {
     clientConnect();
 
     setInterval(loop, interval);
+  }
+
+  function me (player) {
+    if (player) {
+      me_ = player;
+    }
+    
+    return me_;
   }
 
   function initServer (_io, _physics) {
@@ -160,6 +175,7 @@ var Zombies = (function () {
     }
 
     player = new Player();
+    player.reserve();
 
     socket.pid = player.id;
 
@@ -254,8 +270,8 @@ var Zombies = (function () {
         new Player (ev.data).add();
 
         if (ev.data.identity) {
-          me = players[ev.data.id];
-          console.log("found myself", me);
+          me(players[ev.data.id]);
+          console.log("found myself", me());
         }
 
       break;
