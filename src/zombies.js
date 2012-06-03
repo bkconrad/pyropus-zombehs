@@ -1,4 +1,10 @@
 var Zombies = (function () {
+  var Dir = {
+    UP: 1,
+    DOWN: 2,
+    LEFT: 3,
+    RIGHT: 4
+  };
 
   function Event (type, frame, data) {
     this.type = type;
@@ -60,6 +66,7 @@ var Zombies = (function () {
 
     this.name = data.name || "player" + new Date().getTime();
     this.socket = data.socket || null;
+    this.speed = 40;
 
     if (data.ent) {
       this.ent = physics.create(data.ent);
@@ -71,7 +78,7 @@ var Zombies = (function () {
         yvel: (Math.random() - .5) * 10,
         width: Math.random() * 20,
         height: Math.random() * 20,
-        static: Math.random() > .5
+        static: false
       });
     }
   }
@@ -330,7 +337,20 @@ var Zombies = (function () {
       break;
 
       case 'move':
-        players[ev.from].ent.xvel = 20 * ev.data.dir;
+        switch (ev.data) {
+          case Dir.LEFT:
+            players[ev.from].ent.xvel = -players[ev.from].speed;
+          break;
+          case Dir.RIGHT:
+            players[ev.from].ent.xvel = players[ev.from].speed;
+          break;
+          case Dir.UP:
+            players[ev.from].ent.yvel = -players[ev.from].speed;
+          break;
+          case Dir.DOWN:
+            players[ev.from].ent.yvel = players[ev.from].speed;
+          break;
+        }
       break;
 
       case 'part':
@@ -366,11 +386,19 @@ var Zombies = (function () {
     console.log(ev);
     switch (ev.which) {
       case 65:
-        new Event('move', false, {dir: -1}).add().submit();
+        new Event('move', false, Dir.LEFT).add().submit();
       break;
 
       case 68:
-        new Event('move', false, {dir: 1}).add().submit();
+        new Event('move', false, Dir.RIGHT).add().submit();
+      break;
+
+      case 83:
+        new Event('move', false, Dir.DOWN).add().submit();
+      break;
+
+      case 87:
+        new Event('move', false, Dir.UP).add().submit();
       break;
 
       default:
