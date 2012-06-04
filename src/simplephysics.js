@@ -31,6 +31,7 @@ var SimplePhysics = (function () {
     height: 0,
     static: false,
     listener: false,
+    supported: false,
     handlers: [],
     id: undefined,
     update: function (dt) {
@@ -39,6 +40,14 @@ var SimplePhysics = (function () {
 
       this.x += this.xvel * dt / 1000;
       this.y += this.yvel * dt / 1000;
+
+      if (!this.supported)
+        this.yvel += gravity;
+
+      if (this.y > groundLevel) {
+        this.supported = true;
+        this.y = groundLevel;
+      }
     },
     /**
      * @brief get AABB
@@ -81,7 +90,8 @@ var SimplePhysics = (function () {
 
   var entList = []
     , collisionList = []
-    , gravity = 0
+    , gravity = .2
+    , groundLevel = 300;
     ;
 
 
