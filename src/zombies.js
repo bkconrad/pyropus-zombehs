@@ -1,4 +1,11 @@
 var Zombies = (function () {
+  var KeyMap = {
+    65: 'left',
+    68: 'right',
+    87: 'up',
+    83: 'down'
+  };
+
   var Dir = {
     UP: 1,
     DOWN: 2,
@@ -133,6 +140,7 @@ var Zombies = (function () {
     , lastDigest
     , serverDigest
     , lastFrame
+    , keyStates
 
     // server
   ;
@@ -148,18 +156,21 @@ var Zombies = (function () {
 
   function initClient (_canvas, _io, _physics, _renderer) {
     initShared(_io, _physics);
-    isServer = false;
     canvas = _canvas;
     context = canvas.getContext('2d');
     renderer = _renderer;
     Renderer.init(context, physics);
+
+    isServer = false;
     lastFrame = 0;
+    keyStates = [];
 
     clientConnect();
 
     setInterval(loop, interval);
 
-    window.onkeydown = keyHandler;
+    window.onkeydown = keyDown;
+    window.onkeyup = keyUp;
 
     // digest testing
     /*
@@ -294,6 +305,7 @@ var Zombies = (function () {
     }
 
     if (!isServer) {
+      handleKeys();
       renderer.center(me().ent); 
       now = new Date().getTime();
       renderer.render(now - lastFrame);
@@ -383,27 +395,42 @@ var Zombies = (function () {
     }
   }
 
-  function keyHandler (ev) {
+  function keyDown (ev) {
     console.log(ev);
-    switch (ev.which) {
-      case 65:
-        new Event('move', false, Dir.LEFT).add().submit();
-      break;
+    if (ev.which in KeyMap) {
+      keyStates[KeyMap[ev.which]] = true;
+    }
+  }
 
-      case 68:
-        new Event('move', false, Dir.RIGHT).add().submit();
-      break;
+  function keyUp (ev) {
+    if (ev.which in KeyMap) {
+      delete keyStates[KeyMap[ev.which]];
+    }
+  }
 
-      case 83:
-        new Event('move', false, Dir.DOWN).add().submit();
-      break;
+  function handleKeys () {
+    var i;
+    for (i in keyStates) {
+      switch (i) {
+        case 'left':
+          new Event('move', false, Dir.LEFT).add().submit();
+        break;
 
-      case 87:
-        new Event('move', false, Dir.UP).add().submit();
-      break;
+        case 'right':
+          new Event('move', false, Dir.RIGHT).add().submit();
+        break;
 
-      default:
-      break;
+        case 'down':
+          new Event('move', false, Dir.DOWN).add().submit();
+        break;
+
+        case 'up':
+          new Event('move', false, Dir.UP).add().submit();
+        break;
+
+        default:
+        break;
+      }
     }
   }
 
