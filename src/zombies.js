@@ -6,6 +6,8 @@ var Zombies = (function () {
     83: 'down'
   };
 
+  var keyStates = [];
+
   var Dir = {
     UP: 1,
     DOWN: 2,
@@ -73,7 +75,7 @@ var Zombies = (function () {
 
     this.name = data.name || "player" + new Date().getTime();
     this.socket = data.socket || null;
-    this.speed = 40;
+    this.speed = 100;
 
     if (data.ent) {
       this.ent = physics.create(data.ent);
@@ -140,7 +142,6 @@ var Zombies = (function () {
     , lastDigest
     , serverDigest
     , lastFrame
-    , keyStates
 
     // server
   ;
@@ -163,7 +164,6 @@ var Zombies = (function () {
 
     isServer = false;
     lastFrame = 0;
-    keyStates = [];
 
     clientConnect();
 
@@ -366,6 +366,14 @@ var Zombies = (function () {
         }
       break;
 
+      case 'stopx':
+        players[ev.from].ent.xvel = 0;
+      break;
+
+      case 'stopy':
+        players[ev.from].ent.yvel = 0;
+      break;
+
       case 'part':
         players[ev.data.id].drop();
       break;
@@ -396,40 +404,73 @@ var Zombies = (function () {
   }
 
   function keyDown (ev) {
+    var command = KeyMap[ev.which];
     console.log(ev);
-    if (ev.which in KeyMap) {
-      keyStates[KeyMap[ev.which]] = true;
+    if (!ev.which in KeyMap) {
+      return;
     }
+
+    // only add a new press if it isn't there
+    if (!(command in keyStates))
+      keyStates[command] =  1;
   }
 
   function keyUp (ev) {
-    if (ev.which in KeyMap) {
-      delete keyStates[KeyMap[ev.which]];
+    var command = KeyMap[ev.which];
+    if (!ev.which in KeyMap) {
+      return;
     }
+
+    keyStates[command] =  -1;
   }
 
   function handleKeys () {
     var i;
     for (i in keyStates) {
-      switch (i) {
-        case 'left':
-          new Event('move', false, Dir.LEFT).add().submit();
-        break;
+      // key down this frame
+      if (keyStates[i] == 1) {
+        switch (i) {
+          case 'left':
+            new Event('move', false, Dir.LEFT).add().submit();
+          break;
 
-        case 'right':
-          new Event('move', false, Dir.RIGHT).add().submit();
-        break;
+          case 'right':
+            new Event('move', false, Dir.RIGHT).add().submit();
+          break;
 
-        case 'down':
-          new Event('move', false, Dir.DOWN).add().submit();
-        break;
+          case 'down':
+            new Event('move', false, Dir.DOWN).add().submit();
+          break;
 
-        case 'up':
-          new Event('move', false, Dir.UP).add().submit();
-        break;
+          case 'up':
+            new Event('move', false, Dir.UP).add().submit();
+          break;
 
-        default:
-        break;
+          default:
+          break;
+        }
+
+        keyStates[i] = 0;
+      }
+
+      // key up this frame
+      if (keyStates[i] == -1) {
+        switch (i) {
+          case 'left':
+          case 'right':
+            new Event('stopx', false).add().submit();
+          break;
+
+          case 'down':
+          case 'up':
+            new Event('stopy', false).add().submit();
+          break;
+
+          default:
+          break;
+        }
+
+        delete keyStates[i];
       }
     }
   }
