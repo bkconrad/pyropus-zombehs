@@ -240,7 +240,7 @@ var Zombies = (function () {
       var ev = new Event(data.type, false, data.data);
       ev.frame = frameCount + 2;
       ev.from = socket.pid;
-      ev.relay(socket);
+      ev.broadcast();
       ev.add();
       console.log('relaying', ev);
     });
@@ -348,7 +348,9 @@ var Zombies = (function () {
       break;
 
       case 'move':
-        players[ev.from].sprite.play();
+        if (!isServer)
+          players[ev.from].sprite.play();
+
         switch (ev.data) {
           case Dir.LEFT:
             players[ev.from].ent.xvel = -players[ev.from].speed;
@@ -368,14 +370,14 @@ var Zombies = (function () {
       case 'stopx':
         players[ev.from].ent.xvel = 0;
 
-        if (!('up' in keyStates || 'down' in keyStates))
+        if (!isServer && !('up' in keyStates || 'down' in keyStates))
           players[ev.from].sprite.stop();
       break;
 
       case 'stopy':
         players[ev.from].ent.yvel = 0;
 
-        if (!('left' in keyStates || 'right' in keyStates))
+        if (!isServer && !('left' in keyStates || 'right' in keyStates))
           players[ev.from].sprite.stop();
       break;
 
@@ -436,19 +438,19 @@ var Zombies = (function () {
       if (keyStates[i] == 1) {
         switch (i) {
           case 'left':
-            new Event('move', false, Dir.LEFT).add().submit();
+            new Event('move', false, Dir.LEFT).submit();
           break;
 
           case 'right':
-            new Event('move', false, Dir.RIGHT).add().submit();
+            new Event('move', false, Dir.RIGHT).submit();
           break;
 
           case 'down':
-            new Event('move', false, Dir.DOWN).add().submit();
+            new Event('move', false, Dir.DOWN).submit();
           break;
 
           case 'up':
-            new Event('move', false, Dir.UP).add().submit();
+            new Event('move', false, Dir.UP).submit();
           break;
 
           default:
@@ -463,12 +465,12 @@ var Zombies = (function () {
         switch (i) {
           case 'left':
           case 'right':
-            new Event('stopx', false).add().submit();
+            new Event('stopx', false).submit();
           break;
 
           case 'down':
           case 'up':
-            new Event('stopy', false).add().submit();
+            new Event('stopy', false).submit();
           break;
 
           default:

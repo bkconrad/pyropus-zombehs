@@ -12,8 +12,8 @@ var Renderer = (function () {
     height: 32,
     sprites: [
       { name: 'stand' },
-      { name: 'walk_1', x: 0, y: 1},
-      { name: 'walk_2', x: 0, y: 1},
+      { name: 'walk_1'},
+      { name: 'walk_2'},
     ]
   });
 
