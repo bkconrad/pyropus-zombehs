@@ -77,6 +77,8 @@ var Renderer = (function () {
     sprites[i].id = i;
     sprites[i]._ent = ent;
     sprites[i].addAnimation('walk', walk);
+    sprites[i].animate(0);
+    sprites[i].pause();
     return sprites[i];
   }
 

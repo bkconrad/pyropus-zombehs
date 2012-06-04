@@ -348,6 +348,7 @@ var Zombies = (function () {
       break;
 
       case 'move':
+        players[ev.from].sprite.play();
         switch (ev.data) {
           case Dir.LEFT:
             players[ev.from].ent.xvel = -players[ev.from].speed;
@@ -366,10 +367,16 @@ var Zombies = (function () {
 
       case 'stopx':
         players[ev.from].ent.xvel = 0;
+
+        if (!('up' in keyStates || 'down' in keyStates))
+          players[ev.from].sprite.stop();
       break;
 
       case 'stopy':
         players[ev.from].ent.yvel = 0;
+
+        if (!('left' in keyStates || 'right' in keyStates))
+          players[ev.from].sprite.stop();
       break;
 
       case 'part':
