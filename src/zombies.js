@@ -396,8 +396,6 @@ var Zombies = (function () {
   function handleEvent (ev) {
     switch (ev.type) {
       case 'join':
-        if (ev.once)
-          break;
 
         new Player (ev.data).add();
 
@@ -436,8 +434,6 @@ var Zombies = (function () {
       break;
 
       case 'part':
-        if (ev.once)
-          break;
         players[ev.data.cn].drop();
       break;
 
@@ -553,14 +549,20 @@ var Zombies = (function () {
 
   function restoreState(state) {
     var i;
+    for (i = 0; i < players.length; i++) {
+
+      // drop player if he exists now, but doesn't in the saved state
+      if (players[i] && !state.players[i]) {
+        players[i].drop();
+      }
+    }
+
     for (i = 0; i < state.players.length; i++) {
       players[state.players[i].cn].update(state.players[i]);
     }
 
     frameCount = state.frame;
   }
-
-
 
   return {
     initClient: initClient,
