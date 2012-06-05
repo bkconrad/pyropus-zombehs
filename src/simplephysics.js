@@ -85,12 +85,31 @@ var SimplePhysics = (function () {
       for (i in this.handlers) {
         this.handlers[i].call(this, ent);
       }
+    },
+    serialize: function () {
+      return {
+        x: this.x,
+        y: this.y,
+        xvel: this.xvel,
+        yvel: this.yvel,
+        width: this.width,
+        height: this.height,
+        static: this.static,
+        supported: this.supported,
+        id: this.id
+      };
+    },
+    modify: function (data) {
+      var i;
+      for (i in data) {
+        this[i] = data[i];
+      }
     }
   };
 
   var entList = []
     , collisionList = []
-    , gravity = .2
+    , gravity = 10
     , groundLevel = 300;
     ;
 

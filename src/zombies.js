@@ -2,8 +2,8 @@ var Zombies = (function () {
   var KeyMap = {
     65: 'left',
     68: 'right',
-    87: 'up',
-    83: 'down'
+    74: 'jump',
+    82: 'restore'
   };
 
   var keyStates = [];
@@ -20,6 +20,7 @@ var Zombies = (function () {
     this.frame = frame || frameCount + 2;
     this.data = data || null;
     this.from = me_ != undefined ? me_.id : undefined;
+    this.handled = false;
   }
 
   /**
@@ -107,8 +108,7 @@ var Zombies = (function () {
   Player.prototype.serialize = function () {
     return {
       id: this.id,
-      ent: this.ent,
-      sprite: this.sprite,
+      ent: this.ent.serialize(),
       name: this.name
     };
   };
@@ -121,6 +121,16 @@ var Zombies = (function () {
     players[this.id] = undefined;
   };
 
+  /**
+   * Update player state from serialized data
+   */
+  Player.prototype.update = function (data) {
+      this.id = data.id;
+      this.ent.modify(data.ent);
+      this.sprite = data.sprite || this.sprite;
+      this.name = data.name;
+  };
+
   // shared
   var io
     , physics
@@ -130,6 +140,10 @@ var Zombies = (function () {
     , startTime
     , players
     , eventQueue
+    , savedState
+    , candidateState
+    , maxAge = 20
+    , minAge = 10
 
     // client
     , renderer
@@ -151,6 +165,7 @@ var Zombies = (function () {
     startTime = new Date().getTime();
     players = [];
     eventQueue = [];
+    candidateState = savedState = serializeState();
   }
 
   function initClient (_canvas, _io, _physics, _renderer) {
@@ -272,12 +287,9 @@ var Zombies = (function () {
     });
 
     socket.on('command', function (data) {
-      console.log(data);
-      console.log(frameCount);
       var ev = new Event(data.type, data.frame, data.data);
       ev.from = data.from;
       ev.add();
-      console.log(eventQueue);
     });
 
     socket.on('digest check', function (data) {
@@ -297,8 +309,21 @@ var Zombies = (function () {
     var now = new Date().getTime();
 
     while (now > startTime + interval * frameCount) {
-      checkEvents();
+      if (!checkEvents()) {
+        continue;
+      }
+
       physics.update(interval);
+
+      if (frameCount > savedState.frame + maxAge) {
+        savedState = candidateState;
+        candidateState = undefined;
+      }
+
+      if (frameCount >= savedState.frame + maxAge - minAge) {
+        candidateState = serializeState();
+      }
+
       frameCount++;
     }
 
@@ -312,26 +337,50 @@ var Zombies = (function () {
   }
 
   function checkEvents () {
-    var i;
+    var i, j;
     for (i = 0; i < eventQueue.length; i++) {
 
-      if (eventQueue[i].frame > frameCount) {
-        // wait for the event to mature
+      // event we can no longer process
+      if (eventQueue[i].frame < savedState.frame) {
+        console.log('dropping', eventQueue[i], savedState);
+        if (!eventQueue[i].handled)
+          console.log('unhandled dead event!', eventQueue[i]);
+        eventQueue.splice(i, 1);
+        i--;
+        continue;
+      }
+
+      if (eventQueue[i].handled || eventQueue[i].frame > frameCount) {
         continue;
       }
 
       if (eventQueue[i].frame == frameCount) {
         handleEvent(eventQueue[i]);
+        eventQueue[i].handled = true;
       }
 
+      // unhandled, old event. need to resimulate
       if (eventQueue[i].frame < frameCount) {
-        // old event, discard for now
+        console.log("resimulating", savedState, eventQueue);
+        restoreState(savedState);
+
+        for (j = 0; j < eventQueue.length; j++) {
+          // TODO: off by one error?
+          if (eventQueue[j].frame >= frameCount) {
+            eventQueue[j].handled = false;
+          } else {
+            console.log("Too old event!", eventQueue[j]);
+          }
+        }
+
+        console.log("resimulated", players, frameCount);
+        return false;
       }
 
-      // splice and decrement index
-      eventQueue.splice(i, 1);
-      i--;
     }
+
+    // made it through without resimulating
+    return true;
   }
 
   function handleEvent (ev) {
@@ -342,7 +391,6 @@ var Zombies = (function () {
 
         if (ev.data.identity) {
           me(players[ev.data.id]);
-          console.log("found myself", me());
         }
 
       break;
@@ -358,26 +406,20 @@ var Zombies = (function () {
           case Dir.RIGHT:
             players[ev.from].ent.xvel = players[ev.from].speed;
           break;
-          case Dir.UP:
-            players[ev.from].ent.yvel = -players[ev.from].speed;
-          break;
-          case Dir.DOWN:
-            players[ev.from].ent.yvel = players[ev.from].speed;
-          break;
         }
       break;
 
-      case 'stopx':
-        players[ev.from].ent.xvel = 0;
-
-        if (!isServer && !('up' in keyStates || 'down' in keyStates))
-          players[ev.from].sprite.stop();
+      case 'jump':
+        if (players[ev.from].ent.supported) {
+          players[ev.from].ent.yvel = -(2*players[ev.from].speed);
+          players[ev.from].ent.supported = false;
+        }
       break;
 
-      case 'stopy':
-        players[ev.from].ent.yvel = 0;
+      case 'stop':
+        players[ev.from].ent.xvel = 0;
 
-        if (!isServer && !('left' in keyStates || 'right' in keyStates))
+        if (!isServer)
           players[ev.from].sprite.stop();
       break;
 
@@ -405,6 +447,9 @@ var Zombies = (function () {
         }
       break;
 
+      case 'restore':
+      break;
+
       default:
         throw Error ("Unhandled event " + ev.type);
     }
@@ -412,7 +457,6 @@ var Zombies = (function () {
 
   function keyDown (ev) {
     var command = KeyMap[ev.which];
-    console.log(ev);
     if (!ev.which in KeyMap) {
       return;
     }
@@ -445,14 +489,13 @@ var Zombies = (function () {
             new Event('move', false, Dir.RIGHT).submit();
           break;
 
-          case 'down':
-            new Event('move', false, Dir.DOWN).submit();
+          case 'jump':
+            new Event('jump', false).submit();
           break;
 
-          case 'up':
-            new Event('move', false, Dir.UP).submit();
-          break;
-
+          case 'restore':
+            // force a resimulation
+            new Event('restore', frameCount - 5).add();
           default:
           break;
         }
@@ -465,12 +508,7 @@ var Zombies = (function () {
         switch (i) {
           case 'left':
           case 'right':
-            new Event('stopx', false).submit();
-          break;
-
-          case 'down':
-          case 'up':
-            new Event('stopy', false).submit();
+            new Event('stop', false).submit();
           break;
 
           default:
@@ -481,6 +519,34 @@ var Zombies = (function () {
       }
     }
   }
+
+  function serializeState() {
+    var i
+      , result = {};
+      ;
+
+    result.players = [];
+    for (i = 0; i < players.length; i++) {
+      if (typeof players[i] === "object")
+        result.players.push(players[i].serialize());
+      else
+        console.log(typeof players[i]);
+    }
+    result.frame = frameCount;
+
+    return result;
+  }
+
+  function restoreState(state) {
+    var i;
+    for (i = 0; i < state.players.length; i++) {
+      players[state.players[i].id].update(state.players[i]);
+    }
+
+    frameCount = state.frame;
+  }
+
+
 
   return {
     initClient: initClient,
