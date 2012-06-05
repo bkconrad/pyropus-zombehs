@@ -15,6 +15,20 @@ var Zombies = (function () {
     RIGHT: 4
   };
 
+  function SceneObject (x, y, type) {
+    this.ent = { x: x, y: y, width: 32, height: 32};
+    this.type = type;
+  }
+
+  SceneObject.prototype = {
+    ent: {},
+    type: 'typeless',
+    add: function () {
+      renderer.add(this.ent, this.type);
+      console.log('added', this);
+    }
+  };
+
   function Event (type, frame, data) {
     this.type = type;
     this.frame = frame || frameCount + 2;
@@ -190,6 +204,10 @@ var Zombies = (function () {
 
     window.onkeydown = keyDown;
     window.onkeyup = keyUp;
+
+    for (var i = 0; i < 10; i++) {
+      new SceneObject(Math.floor(Math.random() * 100 + 200), Math.floor(Math.random() * 100 + 200)).add();
+    }
 
     // digest testing
     /*

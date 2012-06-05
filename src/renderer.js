@@ -66,7 +66,7 @@ var Renderer = (function () {
     context.clearRect(0, 0, width, height);
   }
 
-  function add (ent) {
+  function add (ent, type) {
     var i = 0;
 
     while (sprites[i]) {
@@ -91,6 +91,7 @@ var Renderer = (function () {
     add: add,
     drop: drop,
     center: center,
+    sprites: sprites,
     render: render
   };
 
