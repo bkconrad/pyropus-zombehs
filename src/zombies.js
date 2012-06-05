@@ -121,7 +121,7 @@ var Zombies = (function () {
     players[this.cn] = this;
 
     if (!isServer)
-      this.sprite = renderer.add(this.ent);
+      this.sprite = renderer.add(this.ent, 'fighter');
   };
 
   Player.prototype.serialize = function () {
@@ -206,7 +206,7 @@ var Zombies = (function () {
     window.onkeyup = keyUp;
 
     for (var i = 0; i < 10; i++) {
-      new SceneObject(Math.floor(Math.random() * 100 + 200), Math.floor(Math.random() * 100 + 200)).add();
+      new SceneObject(Math.floor(Math.random() * 100 + 200), Math.floor(Math.random() * 100 + 200), 'tree').add();
     }
 
     // digest testing

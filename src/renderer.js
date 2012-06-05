@@ -7,30 +7,14 @@ var Renderer = (function () {
     , offset = { x: 0, y: 0}
     ;
 
-  var spritesheet = new anima.SpriteSheet({
-    width: 32,
-    height: 32,
-    sprites: [
-      { name: 'stand' },
-      { name: 'walk_1'},
-      { name: 'walk_2'},
-    ]
-  });
-
-  var walk = new anima.Animation([
-    { sprite: 'walk_1', time: 0.2 },
-    { sprite: 'stand', time: 0.2 },
-    { sprite: 'walk_2', time: 0.2 },
-    { sprite: 'stand', time: 0.2 }
-  ], spritesheet);
-
-  var image = new Image();
-  image.src = 'fighter.gif';
-
   anima.Sprite.prototype.drawSelf = function () {
       var halfWidth = this._ent.width / 2;
       var halfHeight = this._ent.height / 2;
-      this.draw(this._ent.x - halfWidth, this._ent.y - halfHeight, context);
+      if (this.static) {
+        context.drawImage(this._image, 0, 0, this._ent.width, this._ent.height, this._ent.x - halfWidth, this._ent.y - halfHeight, this._ent.width, this._ent.height)
+      } else {
+        this.draw(this._ent.x - halfWidth, this._ent.y - halfHeight, context);
+      }
   };
 
   function center (pos) {
@@ -67,18 +51,26 @@ var Renderer = (function () {
   }
 
   function add (ent, type) {
-    var i = 0;
+    var i = 0, j;
 
     while (sprites[i]) {
       i++;
     }
 
-    sprites[i] = new anima.Sprite(image);
+    sprites[i] = new anima.Sprite(Models[type].image);
     sprites[i].id = i;
     sprites[i]._ent = ent;
-    sprites[i].addAnimation('walk', walk);
-    sprites[i].animate(0);
+    sprites[i].static = Models[type].static;
+    sprites[i].type = type;
+    
+    if (!Models[type].static) {
+      for (j in Models[type].animations) {
+        sprites[i].addAnimation(j, new anima.Animation(Models[type].animations[j], new anima.SpriteSheet(Models[type].spriteSheet)));
+      }
+      sprites[i].animate(0);
+    }
     sprites[i].pause();
+
     return sprites[i];
   }
 
