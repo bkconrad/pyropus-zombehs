@@ -19,7 +19,7 @@ var Zombies = (function () {
     this.type = type;
     this.frame = frame || frameCount + 2;
     this.data = data || null;
-    this.from = me_ != undefined ? me_.id : undefined;
+    this.from = me_ != undefined ? me_.cn : undefined;
     this.handled = false;
     this.once = false;
   }
@@ -65,15 +65,16 @@ var Zombies = (function () {
 
   function Player (data) {
     var i;
+    this.id = data ? data.id : Player.idIndex++;
     data = data || {};
-    if (data.id >= 0) {
-      this.id = data.id;
+    if (data.cn >= 0) {
+      this.cn = data.cn;
     } else {
       for (i = 0; i < players.length; i++) {
         if (players[i] == undefined)
           break;
       }
-      this.id = i;
+      this.cn = i;
     }
 
     this.name = data.name || "player" + new Date().getTime();
@@ -93,15 +94,17 @@ var Zombies = (function () {
     }
   }
 
+  Player.idIndex = 1;
+
   /**
    * reserve a spot for this player without adding him to the player list
    */
   Player.prototype.reserve = function () {
-    players[this.id] = true;
+    players[this.cn] = true;
   }
 
   Player.prototype.add = function () {
-    players[this.id] = this;
+    players[this.cn] = this;
 
     if (!isServer)
       this.sprite = renderer.add(this.ent);
@@ -109,6 +112,7 @@ var Zombies = (function () {
 
   Player.prototype.serialize = function () {
     return {
+      cn: this.cn,
       id: this.id,
       ent: this.ent.serialize(),
       name: this.name
@@ -120,14 +124,14 @@ var Zombies = (function () {
     physics.drop(this.ent);
     if (!isServer)
       renderer.drop(this.sprite);
-    players[this.id] = undefined;
+    players[this.cn] = undefined;
   };
 
   /**
    * Update player state from serialized data
    */
   Player.prototype.update = function (data) {
-      this.id = data.id;
+      this.cn = data.cn;
       this.ent.modify(data.ent);
       this.sprite = data.sprite || this.sprite;
       this.name = data.name;
@@ -240,7 +244,7 @@ var Zombies = (function () {
     player = new Player();
     player.reserve();
 
-    socket.pid = player.id;
+    socket.cn = player.cn;
 
     // relay the join message to all players but the new one
     ev = new Event('join', false, player.serialize());
@@ -255,7 +259,7 @@ var Zombies = (function () {
 
     socket.on('command', function (data) {
       var ev = new Event(data.type, data.frame, data.data);
-      ev.from = socket.pid;
+      ev.from = socket.cn;
       if (data.frame < frameCount - minAge) {
         console.log('too old event');
         return;
@@ -270,12 +274,12 @@ var Zombies = (function () {
     socket.on('digest', function (data) {
       var targetFrame = frameCount + (200 - (frameCount % 100));
       var ev = new Event('digest', targetFrame);
-      ev.from = socket.pid;
+      ev.from = socket.cn;
       ev.add().send(socket);
     });
 
     socket.on('disconnect', function () {
-      new Event('part', false, { id: socket.pid }).add().broadcast();
+      new Event('part', false, { cn: socket.cn }).add().broadcast();
     });
 
   }
@@ -398,7 +402,7 @@ var Zombies = (function () {
         new Player (ev.data).add();
 
         if (ev.data.identity) {
-          me(players[ev.data.id]);
+          me(players[ev.data.cn]);
         }
 
       break;
@@ -434,7 +438,7 @@ var Zombies = (function () {
       case 'part':
         if (ev.once)
           break;
-        players[ev.data.id].drop();
+        players[ev.data.cn].drop();
       break;
 
       case 'digest':
@@ -550,7 +554,7 @@ var Zombies = (function () {
   function restoreState(state) {
     var i;
     for (i = 0; i < state.players.length; i++) {
-      players[state.players[i].id].update(state.players[i]);
+      players[state.players[i].cn].update(state.players[i]);
     }
 
     frameCount = state.frame;
