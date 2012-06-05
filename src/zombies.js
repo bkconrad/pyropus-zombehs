@@ -143,8 +143,8 @@ var Zombies = (function () {
     , eventQueue
     , savedState
     , candidateState
-    , maxAge = 20
-    , minAge = 10
+    , maxAge = 200
+    , minAge = 100
 
     // client
     , renderer
