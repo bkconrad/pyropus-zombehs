@@ -21,6 +21,7 @@ var Zombies = (function () {
     this.data = data || null;
     this.from = me_ != undefined ? me_.id : undefined;
     this.handled = false;
+    this.once = false;
   }
 
   /**
@@ -363,6 +364,7 @@ var Zombies = (function () {
       if (eventQueue[i].frame == frameCount) {
         handleEvent(eventQueue[i]);
         eventQueue[i].handled = true;
+        eventQueue[i].once = true;
       }
 
       // unhandled, old event. need to resimulate
@@ -392,6 +394,8 @@ var Zombies = (function () {
   function handleEvent (ev) {
     switch (ev.type) {
       case 'join':
+        if (ev.once)
+          break;
 
         new Player (ev.data).add();
 
