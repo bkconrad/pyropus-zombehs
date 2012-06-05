@@ -3,7 +3,8 @@ var Zombies = (function () {
     65: 'left',
     68: 'right',
     74: 'jump',
-    82: 'restore'
+    82: 'restore',
+    192: 'state'
   };
 
   var keyStates = [];
@@ -289,6 +290,12 @@ var Zombies = (function () {
       console.log('relaying', ev);
     });
 
+    socket.on('state', function () {
+      var state = serializeState();
+      state.players[socket.cn].identity = true;
+      socket.emit('state', state);
+    });
+
     socket.on('digest', function (data) {
       var targetFrame = frameCount + (200 - (frameCount % 100));
       var ev = new Event('digest', targetFrame);
@@ -305,6 +312,11 @@ var Zombies = (function () {
   function setClientHandlers () {
     if(!socket)
       throw Error("Not connected");
+
+    socket.on('state', function (data) {
+      candidateState = savedState = data;
+      restoreState(savedState);
+    });
 
     socket.on('time', function (data) {
       frameCount = data.frame;
@@ -392,15 +404,6 @@ var Zombies = (function () {
       if (eventQueue[i].frame < frameCount) {
         restoreState(savedState);
 
-        for (j = 0; j < eventQueue.length; j++) {
-          // TODO: off by one error?
-          if (eventQueue[j].frame >= frameCount) {
-            eventQueue[j].handled = false;
-          } else {
-            console.log("Too old event!", eventQueue[j]);
-          }
-        }
-
         console.log("resimulated", players, frameCount);
         return false;
       }
@@ -484,6 +487,7 @@ var Zombies = (function () {
   }
 
   function keyDown (ev) {
+    console.log(ev.which);
     var command = KeyMap[ev.which];
     if (!ev.which in KeyMap) {
       return;
@@ -524,6 +528,12 @@ var Zombies = (function () {
           case 'restore':
             // force a resimulation
             new Event('restore', frameCount - 5).add();
+          break;
+
+          case 'state':
+            socket.emit('state');
+          break;
+
           default:
           break;
         }
@@ -580,11 +590,22 @@ var Zombies = (function () {
     }
 
     frameCount = state.frame;
+
+    for (i = 0; i < eventQueue.length; i++) {
+      // TODO: off by one error?
+      if (eventQueue[i].frame >= frameCount) {
+        eventQueue[i].handled = false;
+      } else {
+        console.log("Too old event!", eventQueue[i]);
+      }
+    }
+
   }
 
   return {
     initClient: initClient,
     initServer: initServer,
+    players: function () { return players; },
     eventQueue: eventQueue
   };
 })();
