@@ -349,7 +349,6 @@ var Zombies = (function () {
 
       // event we can no longer process
       if (eventQueue[i].frame < savedState.frame) {
-        console.log('dropping', eventQueue[i], savedState);
         if (!eventQueue[i].handled)
           console.log('unhandled dead event!', eventQueue[i]);
         eventQueue.splice(i, 1);
@@ -369,7 +368,6 @@ var Zombies = (function () {
 
       // unhandled, old event. need to resimulate
       if (eventQueue[i].frame < frameCount) {
-        console.log("resimulating", savedState, eventQueue);
         restoreState(savedState);
 
         for (j = 0; j < eventQueue.length; j++) {
