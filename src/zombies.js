@@ -27,6 +27,7 @@ var Zombies = (function () {
    * submit event to server
    */
   Event.prototype.submit = function () {
+    this.add();
     socket.emit('command', this);
     return this;
   };
@@ -252,10 +253,15 @@ var Zombies = (function () {
     ev.add();
 
     socket.on('command', function (data) {
-      var ev = new Event(data.type, false, data.data);
-      ev.frame = frameCount + 2;
+      var ev = new Event(data.type, data.frame, data.data);
       ev.from = socket.pid;
-      ev.broadcast();
+      if (data.frame < frameCount - minAge) {
+        console.log('too old event');
+        return;
+        // TODO: NACK these events
+      }
+
+      ev.relay(socket);
       ev.add();
       console.log('relaying', ev);
     });
