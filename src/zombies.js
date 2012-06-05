@@ -487,7 +487,6 @@ var Zombies = (function () {
   }
 
   function keyDown (ev) {
-    console.log(ev.which);
     var command = KeyMap[ev.which];
     if (!ev.which in KeyMap) {
       return;
