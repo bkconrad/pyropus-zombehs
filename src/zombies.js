@@ -434,6 +434,8 @@ var Zombies = (function () {
       break;
 
       case 'part':
+        if (ev.once)
+          break;
         players[ev.data.id].drop();
       break;
 
