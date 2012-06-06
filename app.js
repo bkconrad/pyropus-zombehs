@@ -2,7 +2,6 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , Zombies = require('./src/zombies')
-  , SimplePhysics = require('./src/simplephysics')
   ;
 
 app.listen(1234);
@@ -37,4 +36,4 @@ function handler (req, res) {
   });
 }
 
-Zombies.initServer(io, SimplePhysics);
+Zombies.initServer(io);
