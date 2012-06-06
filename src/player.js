@@ -47,7 +47,7 @@ Player.prototype.reserve = function () {
 Player.prototype.add = function () {
   Player.list[this.cn] = this;
 
-  if (Renderer.active())
+  if (Renderer)
     this.sprite = Renderer.add(this.ent, 'fighter');
 };
 
@@ -63,7 +63,7 @@ Player.prototype.serialize = function () {
 Player.prototype.drop = function () {
   var i;
   Player.physics.drop(this.ent);
-  if (Renderer.active())
+  if (Renderer)
     Renderer.drop(this.sprite);
   Player.list[this.cn] = undefined;
 };

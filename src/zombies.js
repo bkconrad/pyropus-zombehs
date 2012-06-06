@@ -55,13 +55,11 @@ var Zombies = (function () {
     candidateState = savedState = serializeState();
   }
 
-  function initClient (_canvas, _io) {
+  function initClient (_io) {
     initShared(_io);
-    canvas = _canvas;
-    context = canvas.getContext('2d');
     SceneObject = require('./sceneobject');
     Renderer = require('./renderer');
-    Renderer.init(context, physics);
+    Renderer.init();
 
     isServer = false;
     lastFrame = 0;
