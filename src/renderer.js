@@ -67,6 +67,22 @@ var Renderer = (function () {
     context.clearRect(0, 0, width, height);
   }
 
+  function mkSprite(type) {
+    var j, sprite = new Anima.Sprite(Models[type].image);
+    sprite.type = type;
+    sprite.static = Models[type].static;
+
+    // TODO: move this upstream
+    if (!Models[type].static) {
+      for (j in Models[type].animations) {
+        sprite.addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
+      }
+      sprite.animate(0);
+    }
+    sprite.pause();
+    return sprite;
+  }
+
   function add (ent, type) {
     var i = 0, j;
 
@@ -74,20 +90,9 @@ var Renderer = (function () {
       i++;
     }
 
-    sprites[i] = new Anima.Sprite(Models[type].image);
+    sprites[i] = mkSprite(type);
     sprites[i].id = i;
     sprites[i]._ent = ent;
-    sprites[i].static = Models[type].static;
-    sprites[i].type = type;
-    
-    // TODO: move this upstream
-    if (!Models[type].static) {
-      for (j in Models[type].animations) {
-        sprites[i].addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
-      }
-      sprites[i].animate(0);
-    }
-    sprites[i].pause();
 
     return sprites[i];
   }
