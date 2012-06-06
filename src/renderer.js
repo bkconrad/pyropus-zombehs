@@ -1,5 +1,6 @@
 var Renderer = (function () {
 
+  // return false unless we're in a sane browser
   try {
     if (!(this.constructor === window.constructor)) {
       return false;
@@ -29,6 +30,7 @@ var Renderer = (function () {
     width = context.canvas.clientWidth;
     height = context.canvas.clientHeight;
 
+    // TODO: move this upstream
     Anima.Sprite.prototype.drawSelf = function () {
         var halfWidth = this._ent.width / 2;
         var halfHeight = this._ent.height / 2;
@@ -54,7 +56,7 @@ var Renderer = (function () {
 
     for (i in sprites) {
       if (sprites[i]) {
-        sprites[i].Animate(deltaTime / 1000);
+        sprites[i].animate(deltaTime / 1000);
         sprites[i].drawSelf();
       }
     }
@@ -79,11 +81,12 @@ var Renderer = (function () {
     sprites[i].static = Models[type].static;
     sprites[i].type = type;
     
+    // TODO: move this upstream
     if (!Models[type].static) {
-      for (j in Models[type].Animations) {
-        sprites[i].addAnimation(j, new Anima.Animation(Models[type].Animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
+      for (j in Models[type].animations) {
+        sprites[i].addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
       }
-      sprites[i].Animate(0);
+      sprites[i].animate(0);
     }
     sprites[i].pause();
 
@@ -96,9 +99,8 @@ var Renderer = (function () {
 
   return {
     add: add,
-    drop: drop,
     center: center,
-    sprites: sprites,
+    drop: drop,
     init: init,
     render: render
   };
