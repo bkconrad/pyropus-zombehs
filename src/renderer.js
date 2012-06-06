@@ -1,3 +1,6 @@
+var Anima = require('../lib/anima/anima')
+  , Models = require('./models');
+
 var Renderer = (function () {
 
   // return false unless we're in a sane browser
@@ -16,11 +19,7 @@ var Renderer = (function () {
     , running = false
     ;
 
-  var Anima, Models;
-
   function init () {
-    Anima = require('../lib/anima/anima');
-    Models = require('./models');
 
     var canvas = document.createElement("canvas");
     canvas.width = 600;

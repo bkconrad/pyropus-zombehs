@@ -1,4 +1,4 @@
-var Zombies = require('./zombies');
+var Zombies = require('./src/zombies');
 document.addEventListener('DOMContentLoaded', function () {
 
   Zombies.initClient(io);

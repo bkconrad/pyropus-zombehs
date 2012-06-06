@@ -1,3 +1,11 @@
+// return false unless we're in a sane browser
+try {
+  if (!(this.constructor === window.constructor)) {
+    return { exports: false };
+  }
+}
+catch (e) { return { exports: false }; }
+
 var Models = {
   fighter: {
     spriteSheet: {

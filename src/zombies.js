@@ -1,6 +1,8 @@
 var SceneObject, Renderer;
 var Rpc = require('./rpc')
   , Player = require('./player')
+  , Renderer = require('./renderer')
+  , SceneObject = require('./sceneobject')
   , SimplePhysics = require('./simplephysics');
 
 var Zombies = (function () {
@@ -57,8 +59,6 @@ var Zombies = (function () {
 
   function initClient (_io) {
     initShared(_io);
-    SceneObject = require('./sceneobject');
-    Renderer = require('./renderer');
     Renderer.init();
 
     isServer = false;
