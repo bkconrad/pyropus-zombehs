@@ -1,4 +1,5 @@
 var Anima = require('../lib/anima/anima')
+  , Levels = require('./levels')
   , Models = require('./models');
 
 var Renderer = (function () {
@@ -13,21 +14,35 @@ var Renderer = (function () {
 
   var context
     , sprites = []
-    , width
-    , height
+    , width = 600
+    , height = 400
     , offset = { x: 0, y: 0}
     , running = false
     ;
 
+  function loadProgress () {
+    return Models.util.progress();
+  }
+
+  function loadResources (callback) {
+    Models.util.load();
+    var interval = setInterval(function () {
+      if (loadProgress() < 1)
+        return;
+
+      clearInterval(interval);
+      callback();
+    }, 200);
+  }
+
+
   function init () {
 
     var canvas = document.createElement("canvas");
-    canvas.width = 600;
-    canvas.height = 400;
+    canvas.width = width;
+    canvas.height = height;
     document.body.appendChild(canvas);
     context = canvas.getContext('2d');
-    width = context.canvas.clientWidth;
-    height = context.canvas.clientHeight;
 
     // TODO: move this upstream
     Anima.Sprite.prototype.drawSelf = function () {
@@ -67,12 +82,15 @@ var Renderer = (function () {
     context.clearRect(0, 0, width, height);
   }
 
-  function mkSprite(type) {
+  function mkSprite(ent, type) {
+    // TODO: move this upstream
     var j, sprite = new Anima.Sprite(Models[type].image);
     sprite.type = type;
     sprite.static = Models[type].static;
+    sprite._ent = ent;
+    sprite._ent.width = sprite._image.width;
+    sprite._ent.height = sprite._image.height;
 
-    // TODO: move this upstream
     if (!Models[type].static) {
       for (j in Models[type].animations) {
         sprite.addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
@@ -83,6 +101,15 @@ var Renderer = (function () {
     return sprite;
   }
 
+  function loadLevel (levelName) {
+    var i, level = Levels[levelName], sceneObject;
+
+    for (i = 0; i < level.scenery.length; i++) {
+      sceneObject = level.scenery[i];
+      add ({ x: sceneObject.x, y: sceneObject.y}, sceneObject.model);
+    }
+  }
+
   function add (ent, type) {
     var i = 0, j;
 
@@ -90,9 +117,8 @@ var Renderer = (function () {
       i++;
     }
 
-    sprites[i] = mkSprite(type);
+    sprites[i] = mkSprite(ent, type);
     sprites[i].id = i;
-    sprites[i]._ent = ent;
 
     return sprites[i];
   }
@@ -107,6 +133,9 @@ var Renderer = (function () {
     center: center,
     drop: drop,
     init: init,
+    loadLevel: loadLevel,
+    loadResources: loadResources,
+    sprites: function () { return sprites; },
     render: render
   };
 

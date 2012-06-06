@@ -57,6 +57,11 @@ var Zombies = (function () {
     candidateState = savedState = serializeState();
   }
 
+  function runClient () {
+    Renderer.loadLevel('street');
+    setInterval(loop, interval);
+  }
+
   function initClient (_io) {
     initShared(_io);
     Renderer.init();
@@ -65,15 +70,10 @@ var Zombies = (function () {
     lastFrame = 0;
 
     clientConnect();
-
-    setInterval(loop, interval);
+    Renderer.loadResources(runClient);
 
     window.onkeydown = keyDown;
     window.onkeyup = keyUp;
-
-    for (var i = 0; i < 10; i++) {
-      new SceneObject(Math.floor(Math.random() * 100 + 200), Math.floor(Math.random() * 100 + 200), 'tree').add();
-    }
 
     // digest testing
     /*

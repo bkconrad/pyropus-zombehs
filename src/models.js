@@ -33,11 +33,35 @@ var Models = {
   }
 };
 
-var src;
-for (var m in Models) {
-  src = Models[m].image;
-  Models[m].image = new Image();
-  Models[m].image.src = src;
+/**
+ * Causes browser to begin loading models
+ */
+Models.util = {};
+Models.util.load = function () {
+  var src;
+  for (var m in Models) {
+    if (m === 'util')
+      continue;
+    src = Models[m].image;
+    Models[m].image = new Image();
+    Models[m].image.src = src;
+  }
+}
+
+/**
+ * @return float indicating the percentage of images loaded
+ */
+Models.util.progress = function () {
+  var m, count = 0, total = 0;
+  for (m in Models) {
+    if (m === 'util')
+      continue;
+    if (Models[m].image.complete === true)
+      count += 1;
+    total += 1;
+  }
+
+  return count / total;
 }
 
 module.exports = Models;

@@ -1,5 +1,4 @@
 function require (file) {
-  console.log('including', file, 'in', require.path);
   var oldPath = require.path;
 
   // ignore trailing .js
@@ -7,8 +6,6 @@ function require (file) {
 
   var pathParts = file.split('/');
   var filename = pathParts.pop();
-
-  console.log(pathParts);
 
   // trim leading './' or '/'
   if (pathParts[0] == '' || pathParts[0] == '.') {
@@ -26,7 +23,6 @@ function require (file) {
   // build new path by adding directories in the filename given
   require.path = require.path + deltaPath;
 
-  console.log(fullPath);
   var xhr = new XMLHttpRequest ();
   xhr.open('GET', fullPath, false);
   xhr.send();
