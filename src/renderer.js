@@ -93,6 +93,7 @@ var Renderer = (function () {
   }
 
   function drop (sprite) {
+    console.log('dropping', sprite);
     sprites[sprite.id] = undefined;
   }
 

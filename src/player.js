@@ -4,7 +4,7 @@ function Player (data) {
   var i;
   this.id = data ? data.id : Player.idIndex++;
   data = data || {};
-  if (data.cn >= 0) {
+  if (data.cn !== undefined) {
     this.cn = data.cn;
   } else {
     for (i = 0; i < Player.list.length; i++) {
@@ -56,6 +56,7 @@ Player.prototype.serialize = function () {
     cn: this.cn,
     id: this.id,
     ent: this.ent.serialize(),
+    sprite: this.sprite,
     name: this.name
   };
 };
