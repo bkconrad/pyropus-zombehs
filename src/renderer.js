@@ -15,10 +15,10 @@ var Renderer = (function () {
     , running = false
     ;
 
-  var anima, Models;
+  var Anima, Models;
 
   function init () {
-    anima = require('../lib/anima/anima');
+    Anima = require('../lib/anima/anima');
     Models = require('./models');
 
     var canvas = document.createElement("canvas");
@@ -29,7 +29,7 @@ var Renderer = (function () {
     width = context.canvas.clientWidth;
     height = context.canvas.clientHeight;
 
-    anima.Sprite.prototype.drawSelf = function () {
+    Anima.Sprite.prototype.drawSelf = function () {
         var halfWidth = this._ent.width / 2;
         var halfHeight = this._ent.height / 2;
         if (this.static) {
@@ -54,7 +54,7 @@ var Renderer = (function () {
 
     for (i in sprites) {
       if (sprites[i]) {
-        sprites[i].animate(deltaTime / 1000);
+        sprites[i].Animate(deltaTime / 1000);
         sprites[i].drawSelf();
       }
     }
@@ -73,17 +73,17 @@ var Renderer = (function () {
       i++;
     }
 
-    sprites[i] = new anima.Sprite(Models[type].image);
+    sprites[i] = new Anima.Sprite(Models[type].image);
     sprites[i].id = i;
     sprites[i]._ent = ent;
     sprites[i].static = Models[type].static;
     sprites[i].type = type;
     
     if (!Models[type].static) {
-      for (j in Models[type].animations) {
-        sprites[i].addAnimation(j, new anima.Animation(Models[type].animations[j], new anima.SpriteSheet(Models[type].spriteSheet)));
+      for (j in Models[type].Animations) {
+        sprites[i].addAnimation(j, new Anima.Animation(Models[type].Animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
       }
-      sprites[i].animate(0);
+      sprites[i].Animate(0);
     }
     sprites[i].pause();
 
