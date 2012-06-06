@@ -1,3 +1,5 @@
+var Renderer = require('./renderer');
+
 function Player (data) {
   var i;
   this.id = data ? data.id : Player.idIndex++;
@@ -45,8 +47,8 @@ Player.prototype.reserve = function () {
 Player.prototype.add = function () {
   Player.list[this.cn] = this;
 
-  if (!isServer)
-    this.sprite = renderer.add(this.ent, 'fighter');
+  if (Renderer.active())
+    this.sprite = Renderer.add(this.ent, 'fighter');
 };
 
 Player.prototype.serialize = function () {
@@ -61,8 +63,8 @@ Player.prototype.serialize = function () {
 Player.prototype.drop = function () {
   var i;
   Player.physics.drop(this.ent);
-  if (!isServer)
-    renderer.drop(this.sprite);
+  if (Renderer.active())
+    Renderer.drop(this.sprite);
   Player.list[this.cn] = undefined;
 };
 

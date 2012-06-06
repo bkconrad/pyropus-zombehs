@@ -1,7 +1,7 @@
+var SceneObject, Renderer;
 var Rpc = require('./rpc')
-, Player = require('./player')
-, SceneObject = require('./sceneobject')
-, SimplePhysics = require('./simplephysics');
+  , Player = require('./player')
+  , SimplePhysics = require('./simplephysics');
 
 var Zombies = (function () {
   var KeyMap = {
@@ -28,14 +28,12 @@ var Zombies = (function () {
     , isServer
     , interval = 1000/50
     , startTime
-    , players
     , savedState
     , candidateState
     , maxAge = 2000
     , minAge = 1000
 
     // client
-    , renderer
     , canvas
     , context
     , socket
@@ -51,9 +49,9 @@ var Zombies = (function () {
     physics = SimplePhysics;
     Player.init(physics);
     io = _io;
+    Rpc.io = io;
     frameCount = 1;
     startTime = new Date().getTime();
-    players = [];
     candidateState = savedState = serializeState();
   }
 
@@ -61,7 +59,8 @@ var Zombies = (function () {
     initShared(_io);
     canvas = _canvas;
     context = canvas.getContext('2d');
-    renderer = Renderer;
+    SceneObject = require('./sceneobject');
+    Renderer = require('./renderer');
     Renderer.init(context, physics);
 
     isServer = false;
@@ -99,6 +98,8 @@ var Zombies = (function () {
   function initServer (_io) {
     initShared(_io);
     isServer = true;
+    Renderer = false;
+
     io.sockets.on('connection', serverHandler);
 
     io.configure(function () {
@@ -123,9 +124,9 @@ var Zombies = (function () {
     socket.emit('time', { frame: frameCount });
 
     // send player list to new player
-    for (i = 0; i < players.length; i++) {
-      if (players[i])
-        new Rpc('join', false, players[i].serialize()).send(socket);
+    for (i = 0; i < Player.list.length; i++) {
+      if (Player.list[i])
+        mkRpc('join', false, Player.list[i].serialize()).send(socket);
     }
 
     player = new Player();
@@ -134,7 +135,7 @@ var Zombies = (function () {
     socket.cn = player.cn;
 
     // relay the join message to all players but the new one
-    ev = new Rpc('join', false, player.serialize());
+    ev = mkRpc('join', false, player.serialize());
     ev.relay(socket);
 
     // tell new player who he is
@@ -145,7 +146,7 @@ var Zombies = (function () {
     ev.add();
 
     socket.on('command', function (data) {
-      var ev = new Rpc(data.type, data.frame, data.data);
+      var ev = mkRpc(data.type, data.frame, data.data);
       ev.from = socket.cn;
       if (data.frame < frameCount - minAge) {
         console.log('too old event');
@@ -166,13 +167,13 @@ var Zombies = (function () {
 
     socket.on('digest', function (data) {
       var targetFrame = frameCount + (200 - (frameCount % 100));
-      var ev = new Rpc('digest', targetFrame);
+      var ev = mkRpc('digest', targetFrame);
       ev.from = socket.cn;
       ev.add().send(socket);
     });
 
     socket.on('disconnect', function () {
-      new Rpc('part', false, { cn: socket.cn }).add().broadcast();
+      mkRpc('part', false, { cn: socket.cn }).add().broadcast();
     });
 
   }
@@ -196,7 +197,7 @@ var Zombies = (function () {
     });
 
     socket.on('command', function (data) {
-      var ev = new Rpc(data.type, data.frame, data.data);
+      var ev = mkRpc(data.type, data.frame, data.data);
       ev.from = data.from;
       ev.add();
     });
@@ -211,6 +212,7 @@ var Zombies = (function () {
 
   function clientConnect () {
     socket = io.connect(document.origin);
+    Rpc.socket = socket;
     setClientHandlers();
   }
 
@@ -238,9 +240,9 @@ var Zombies = (function () {
 
     if (!isServer) {
       handleKeys();
-      renderer.center(me().ent); 
+      Renderer.center(me().ent); 
       now = new Date().getTime();
-      renderer.render(now - lastFrame);
+      Renderer.render(now - lastFrame);
       lastFrame = now;
     }
   }
@@ -272,7 +274,7 @@ var Zombies = (function () {
       if (Rpc.queue[i].frame < frameCount) {
         restoreState(savedState);
 
-        console.log("resimulated", players, frameCount);
+        console.log("resimulated", Player.list, frameCount);
         return false;
       }
 
@@ -289,52 +291,52 @@ var Zombies = (function () {
         new Player (ev.data).add();
 
         if (ev.data.identity) {
-          me(players[ev.data.cn]);
+          me(Player.list[ev.data.cn]);
         }
 
       break;
 
       case 'move':
         if (!isServer)
-          players[ev.from].sprite.play();
+          Player.list[ev.from].sprite.play();
 
         switch (ev.data) {
           case Dir.LEFT:
-            players[ev.from].ent.xvel = -players[ev.from].speed;
+            Player.list[ev.from].ent.xvel = -Player.list[ev.from].speed;
           break;
           case Dir.RIGHT:
-            players[ev.from].ent.xvel = players[ev.from].speed;
+            Player.list[ev.from].ent.xvel = Player.list[ev.from].speed;
           break;
         }
       break;
 
       case 'jump':
-        if (players[ev.from].ent.supported) {
-          players[ev.from].ent.yvel = -(2*players[ev.from].speed);
-          players[ev.from].ent.supported = false;
+        if (Player.list[ev.from].ent.supported) {
+          Player.list[ev.from].ent.yvel = -(2*Player.list[ev.from].speed);
+          Player.list[ev.from].ent.supported = false;
         }
       break;
 
       case 'stop':
-        players[ev.from].ent.xvel = 0;
+        Player.list[ev.from].ent.xvel = 0;
 
         if (!isServer)
-          players[ev.from].sprite.stop();
+          Player.list[ev.from].sprite.stop();
       break;
 
       case 'part':
-        players[ev.data.cn].drop();
+        Player.list[ev.data.cn].drop();
       break;
 
       case 'digest':
         if (isServer) {
-          if (players[ev.from].socket)
-            players[ev.from].socket.emit('digest check', {
+          if (Player.list[ev.from].socket)
+            Player.list[ev.from].socket.emit('digest check', {
               digest: physics.digest(),
               frame: frameCount
             });
           else
-            console.log(players[ev.from]);
+            console.log(Player.list[ev.from]);
         } else {
           lastDigest = {
               digest: physics.digest(),
@@ -381,20 +383,20 @@ var Zombies = (function () {
       if (keyStates[i] == 1) {
         switch (i) {
           case 'left':
-            new Rpc('move', false, Dir.LEFT).submit();
+            mkRpc('move', false, Dir.LEFT).submit();
           break;
 
           case 'right':
-            new Rpc('move', false, Dir.RIGHT).submit();
+            mkRpc('move', false, Dir.RIGHT).submit();
           break;
 
           case 'jump':
-            new Rpc('jump', false).submit();
+            mkRpc('jump', false).submit();
           break;
 
           case 'restore':
             // force a resimulation
-            new Rpc('restore', frameCount - 5).add();
+            mkRpc('restore', frameCount - 5).add();
           break;
 
           case 'state':
@@ -413,7 +415,7 @@ var Zombies = (function () {
         switch (i) {
           case 'left':
           case 'right':
-            new Rpc('stop', false).submit();
+            mkRpc('stop', false).submit();
           break;
 
           default:
@@ -431,11 +433,11 @@ var Zombies = (function () {
       ;
 
     result.players = [];
-    for (i = 0; i < players.length; i++) {
-      if (typeof players[i] === "object")
-        result.players.push(players[i].serialize());
+    for (i = 0; i < Player.list.length; i++) {
+      if (typeof Player.list[i] === "object")
+        result.players.push(Player.list[i].serialize());
       else
-        console.log(typeof players[i]);
+        console.log(typeof Player.list[i]);
     }
     result.frame = frameCount;
 
@@ -444,16 +446,16 @@ var Zombies = (function () {
 
   function restoreState(state) {
     var i;
-    for (i = 0; i < players.length; i++) {
+    for (i = 0; i < Player.list.length; i++) {
 
       // drop player if he exists now, but doesn't in the saved state
-      if (players[i] && !state.players[i]) {
-        players[i].drop();
+      if (Player.list[i] && !state.players[i]) {
+        Player.list[i].drop();
       }
     }
 
     for (i = 0; i < state.players.length; i++) {
-      players[state.players[i].cn].update(state.players[i]);
+      Player.list[state.players[i].cn].update(state.players[i]);
     }
 
     frameCount = state.frame;
@@ -469,10 +471,16 @@ var Zombies = (function () {
 
   }
 
+  function mkRpc (type, frame, data) {
+    var rpc = new Rpc (type, frame || frameCount, data);
+    rpc.from = me_ ? me_.cn : undefined;
+    return rpc;
+  };
+
   return {
     initClient: initClient,
     initServer: initServer,
-    players: function () { return players; },
+    players: function () { return Player.list; },
   };
 })();
 

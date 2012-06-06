@@ -1,11 +1,14 @@
 function Rpc (type, frame, data) {
   this.type = type;
-  this.frame = frame || frameCount + 2;
-  this.data = data || null;
-  this.from = me_ != undefined ? me_.cn : undefined;
+  this.frame = frame;
+  this.data = data;
+  this.from = undefined;
   this.handled = false;
   this.once = false;
 }
+
+Rpc.socket = undefined;
+Rpc.io = undefined;
 
 Rpc.queue = [];
 
@@ -14,7 +17,7 @@ Rpc.queue = [];
  */
 Rpc.prototype.submit = function () {
   this.add();
-  socket.emit('command', this);
+  Rpc.socket.emit('command', this);
   return this;
 };
 
@@ -31,7 +34,7 @@ Rpc.prototype.relay = function (socket) {
  * send rpc to all players
  */
 Rpc.prototype.broadcast = function () {
-  io.sockets.emit('command', this);
+  Rpc.io.sockets.emit('command', this);
   return this;
 };
 

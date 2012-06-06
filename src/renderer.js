@@ -1,3 +1,4 @@
+var anima, Models;
 var Renderer = (function () {
   var context
     , sprites = []
@@ -5,17 +6,12 @@ var Renderer = (function () {
     , width
     , height
     , offset = { x: 0, y: 0}
+    , running = false
     ;
 
-  anima.Sprite.prototype.drawSelf = function () {
-      var halfWidth = this._ent.width / 2;
-      var halfHeight = this._ent.height / 2;
-      if (this.static) {
-        context.drawImage(this._image, 0, 0, this._ent.width, this._ent.height, this._ent.x - halfWidth, this._ent.y - halfHeight, this._ent.width, this._ent.height)
-      } else {
-        this.draw(this._ent.x - halfWidth, this._ent.y - halfHeight, context);
-      }
-  };
+  function active() {
+    return running;
+  }
 
   function center (pos) {
     offset.x = pos.x;
@@ -44,6 +40,21 @@ var Renderer = (function () {
     physics = _physics;
     width = context.canvas.clientWidth;
     height = context.canvas.clientHeight;
+
+    anima = require('../lib/anima/anima');
+    Models = require('./models');
+
+    anima.Sprite.prototype.drawSelf = function () {
+        var halfWidth = this._ent.width / 2;
+        var halfHeight = this._ent.height / 2;
+        if (this.static) {
+          context.drawImage(this._image, 0, 0, this._ent.width, this._ent.height, this._ent.x - halfWidth, this._ent.y - halfHeight, this._ent.width, this._ent.height)
+        } else {
+          this.draw(this._ent.x - halfWidth, this._ent.y - halfHeight, context);
+        }
+    };
+
+    running = true;
   }
 
   function clear () {
@@ -84,7 +95,10 @@ var Renderer = (function () {
     drop: drop,
     center: center,
     sprites: sprites,
+    active: active,
     render: render
   };
 
 })();
+
+module.exports = Renderer

@@ -31,3 +31,5 @@ for (var m in Models) {
   Models[m].image = new Image();
   Models[m].image.src = src;
 }
+
+module.exports = Models;
