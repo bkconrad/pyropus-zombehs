@@ -1,10 +1,7 @@
-try {
-  var Rpc = require('./rpc')
-  , Player = require('./player')
-  , SceneObject = require('./sceneobject')
-  , SimplePhysics = require('./simplephysics');
-}
-catch (e) { console.log(e) }
+var Rpc = require('./rpc')
+, Player = require('./player')
+, SceneObject = require('./sceneobject')
+, SimplePhysics = require('./simplephysics');
 
 var Zombies = (function () {
   var KeyMap = {

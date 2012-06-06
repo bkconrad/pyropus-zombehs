@@ -1,3 +1,5 @@
+var Renderer = require('./renderer')
+  , Zombies = require('./zombies');
 document.addEventListener('DOMContentLoaded', function () {
  
   // create & add canvas

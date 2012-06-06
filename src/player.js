@@ -78,7 +78,4 @@ Player.prototype.update = function (data) {
 
 Player.list = [];
 
-try {
-  module.exports = Player;
-}
-catch (e) { }
+module.exports = Player;
