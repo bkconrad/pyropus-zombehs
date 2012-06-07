@@ -1,5 +1,4 @@
-var Renderer = require('./renderer')
-  , Being = require('./being');
+var Being = require('./being');
 
 function Player (data) {
   var i;
@@ -63,20 +62,8 @@ Player.prototype.add = function () {
 };
 
 Player.prototype.serialize = function () {
-  var result = {
-    cn: this.cn,
-    id: this.id,
-    sprite: this.sprite,
-    name: this.name
-  };
-
-  // serialize ent if it is an Entity, otherwise pass it as-is
-  if (this.ent.serialize) {
-    result.ent = this.ent.serialize();
-  } else {
-    result.ent = this.ent;
-  }
-
+  var result = this.serializeBeing();
+  result.cn = this.cn;
   return result;
 };
 

@@ -42,6 +42,23 @@ Being.prototype.addBeing = function () {
   return this;
 };
 
+Being.prototype.serializeBeing = function () {
+  var result = {
+    id: this.id,
+    sprite: this.sprite,
+    name: this.name
+  };
+
+  // serialize ent if it is an Entity, otherwise pass it as-is
+  if (this.ent.serialize) {
+    result.ent = this.ent.serialize();
+  } else {
+    result.ent = this.ent;
+  }
+
+  return result;
+};
+
 Being.prototype.dropBeing = function () {
   SimplePhysics.drop(this.ent);
 

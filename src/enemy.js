@@ -1,12 +1,6 @@
-var SimplePhysics = require ('./simplephysics'),
-    Renderer = require('./renderer');
-var Enemy = function (ent) {
-  SimplePhysics.add(ent);
+var Being = require('./being');
 
+var Enemy = function () {
 };
 
-Enemy.prototype = {
-  ent: undefined,
-  sprite: undefined,
-  id: undefined
-};
+Enemy.prototype = Being.prototype;
