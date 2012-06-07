@@ -1,6 +1,7 @@
 var SceneObject, Renderer;
 var Rpc = require('./rpc')
   , Player = require('./player')
+  , Enemy = require('./enemy')
   , Renderer = require('./renderer')
   , SceneObject = require('./sceneobject')
   , SimplePhysics = require('./simplephysics');
@@ -49,7 +50,6 @@ var Zombies = (function () {
 
   function initShared (_io) {
     physics = SimplePhysics;
-    Player.init(physics);
     io = _io;
     Rpc.io = io;
     frameCount = 1;
@@ -286,10 +286,10 @@ var Zombies = (function () {
     switch (ev.type) {
       case 'join':
 
-        new Player (ev.data).add();
+        var newPlayer = Player.unserialize(ev.data);
 
         if (ev.data.identity) {
-          me(Player.list[ev.data.cn]);
+          me(newPlayer);
         }
 
       break;

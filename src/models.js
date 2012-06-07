@@ -30,6 +30,10 @@ var Models = {
   tree: {
     static: true,
     image: 'tree.gif'
+  },
+  zombie: {
+    static: true,
+    image: 'zombie.gif'
   }
 };
 

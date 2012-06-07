@@ -1,72 +1,88 @@
-var Renderer = require('./renderer');
+var Renderer = require('./renderer')
+  , Being = require('./being');
 
 function Player (data) {
   var i;
-  this.id = data ? data.id : Player.idIndex++;
   data = data || {};
+
   if (data.cn !== undefined) {
     this.cn = data.cn;
   } else {
     for (i = 0; i < Player.list.length; i++) {
-      if (Player.list[i] == undefined)
+      if (Player.list[i] == undefined) {
         break;
+      }
     }
     this.cn = i;
   }
 
-  this.name = data.name || "player" + new Date().getTime();
   this.socket = data.socket || null;
-  this.speed = 100;
 
-  if (data.ent) {
-    this.ent = Player.physics.create(data.ent);
-  } else {
-    this.ent = Player.physics.create({
-      x: Math.random() * 200,
-      y: Math.random() * 200,
-      width: 32,
-      height: 32,
-      static: false
-    });
-  }
 }
+
+Player.unserialize = function (data) {
+  var player;
+
+  // find referenced Player, or make a new one
+  if (data.cn && Player.list[data.cn] !== undefined && Player.list[data.cn] !== true) {
+    player = Player.list[data.cn];
+  } else {
+    player = new Player (data);
+  }
+
+  // initialize one
+  player.createBeing();
+
+  // update it
+  player.name = data.name || player.name;
+  player.id = data.id || player.id;
+  player.sprite = data.sprite || player.sprite;
+  player.ent = data.ent || player.ent;
+
+  // add it
+  player.add();
+
+  return player;
+};
+
+Player.prototype = Being.prototype;
 
 Player.idIndex = 1;
-
-Player.init = function (physics) {
-  Player.physics = physics;
-}
 
 /**
  * reserve a spot for this player without adding him to the player list
  */
 Player.prototype.reserve = function () {
   Player.list[this.cn] = true;
+  return this.createBeing();
 }
 
 Player.prototype.add = function () {
   Player.list[this.cn] = this;
-
-  if (Renderer)
-    this.sprite = Renderer.add(this.ent, 'fighter');
+  return this.addBeing();
 };
 
 Player.prototype.serialize = function () {
-  return {
+  var result = {
     cn: this.cn,
     id: this.id,
-    ent: this.ent.serialize(),
     sprite: this.sprite,
     name: this.name
   };
+
+  // serialize ent if it is an Entity, otherwise pass it as-is
+  if (this.ent.serialize) {
+    result.ent = this.ent.serialize();
+  } else {
+    result.ent = this.ent;
+  }
+
+  return result;
 };
 
 Player.prototype.drop = function () {
-  var i;
-  Player.physics.drop(this.ent);
-  if (Renderer)
-    Renderer.drop(this.sprite);
   Player.list[this.cn] = undefined;
+  this.dropBeing();
 };
 
 /**
@@ -76,7 +92,6 @@ Player.prototype.update = function (data) {
     this.cn = data.cn;
     this.ent.modify(data.ent);
     this.sprite = data.sprite || this.sprite;
-    this.name = data.name;
 };
 
 Player.list = [];

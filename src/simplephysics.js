@@ -113,7 +113,6 @@ var SimplePhysics = (function () {
     , groundLevel = 300;
     ;
 
-
   function create (data) {
     var ent = new Entity(data);
     return addEntity(ent);
