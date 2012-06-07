@@ -41,6 +41,9 @@ Player.unserialize = function (data) {
   // add it
   player.add();
 
+  if (player.sprite)
+    player.sprite._ent = player.ent;
+
   return player;
 };
 

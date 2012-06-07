@@ -35,7 +35,7 @@ Being.prototype.createBeing = function (ent, type) {
 Being.prototype.addBeing = function () {
   this.ent = SimplePhysics.create(this.ent);
 
-  if (Renderer) {
+  if (Renderer && !this.sprite) {
     this.sprite = Renderer.add(this.ent, this.type);
   }
   

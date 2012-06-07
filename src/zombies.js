@@ -453,7 +453,7 @@ var Zombies = (function () {
     }
 
     for (i = 0; i < state.players.length; i++) {
-      Player.list[state.players[i].cn].update(state.players[i]);
+      Player.unserialize(state.players[i]);
     }
 
     frameCount = state.frame;
