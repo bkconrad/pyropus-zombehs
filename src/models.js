@@ -15,6 +15,11 @@ var Models = {
         { name: 'stand' },
         { name: 'walk_1'},
         { name: 'walk_2'},
+        { name: 'run'},
+        { name: 'jump'},
+        { name: 'punch_1'},
+        { name: 'punch_2'},
+        { name: 'punch_3'},
       ]
     },
     animations: {
@@ -23,6 +28,19 @@ var Models = {
         { sprite: 'stand', time: 0.2 },
         { sprite: 'walk_2', time: 0.2 },
         { sprite: 'stand', time: 0.2 }
+      ],
+      run: [
+        { sprite: 'walk_1', time: 0.1 },
+        { sprite: 'walk_2', time: 0.1 },
+        { sprite: 'run', time: 0.1 },
+        { sprite: 'walk_2', time: 0.1 },
+        { sprite: 'walk_1', time: 0.1 },
+        { sprite: 'stand', time: 0.1 },
+      ],
+      punch: [
+        { sprite: 'punch_1', time: 0.1 },
+        { sprite: 'punch_2', time: 0.1 },
+        { sprite: 'punch_3', time: 0.2 }
       ]
     },
     image: 'fighter.gif'
