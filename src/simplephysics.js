@@ -239,6 +239,7 @@ var SimplePhysics = (function () {
   }
 
   return {
+    Entity: Entity,
     entList: entList,
     update: update,
     drop: dropEntity,

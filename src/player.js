@@ -14,6 +14,8 @@ function Player (data) {
     }
     this.cn = i;
   }
+  
+  this.identity = data.identity;
 
   this.socket = data.socket || null;
 
@@ -34,7 +36,6 @@ Player.fromData = function (data) {
 
   player.createBeing();
 
-  player.sprite = data.sprite || player.sprite;
   player.ent = data.ent || player.ent;
   player.name = data.name || player.name;
   player.id = data.id || player.id;

@@ -46,11 +46,9 @@ var Models = {
     image: 'fighter.gif'
   },
   tree: {
-    static: true,
     image: 'tree.gif'
   },
   zombie: {
-    static: true,
     image: 'zombie.gif'
   }
 };

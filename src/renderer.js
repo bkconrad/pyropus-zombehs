@@ -86,17 +86,20 @@ var Renderer = (function () {
     // TODO: move this upstream
     var j, sprite = new Anima.Sprite(Models[type].image);
     sprite.type = type;
-    sprite.static = Models[type].static;
+    sprite.static = !Models[type].animations;
     sprite._ent = ent;
-    sprite._ent.width = sprite._image.width;
-    sprite._ent.height = sprite._image.height;
 
-    if (!Models[type].static) {
-      for (j in Models[type].animations) {
-        sprite.addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
-      }
+    for (j in Models[type].animations) {
+      sprite.addAnimation(j, new Anima.Animation(Models[type].animations[j], new Anima.SpriteSheet(Models[type].spriteSheet)));
+    }
+
+    if (sprite.static) {
+      sprite._ent.width = sprite._image.width;
+      sprite._ent.height = sprite._image.height;
+    } else {
       sprite.animate(0);
     }
+
     sprite.pause();
     return sprite;
   }

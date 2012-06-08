@@ -7,7 +7,8 @@ function Being (ent) {
 Being.idIndex = 1;
 
 /**
- * return a partially-built Being suitable for serialization
+ * return a partially-built Being suitable for serialization and ready to be
+ * added via #addBeing
  */
 Being.prototype.createBeing = function (ent, type) {
   this.name = "being" + new Date().getTime();
@@ -32,6 +33,9 @@ Being.prototype.createBeing = function (ent, type) {
   return this;
 }
 
+/**
+ * Add Being and associated data to Physics and Renderer
+ */
 Being.prototype.addBeing = function () {
   this.ent = SimplePhysics.create(this.ent);
 
@@ -40,7 +44,6 @@ Being.prototype.addBeing = function () {
       this.sprite = Renderer.add(this.ent, this.type);
     }
     this.sprite._ent = this.ent;
-    console.log('setting ent');
   }
 
   
@@ -54,7 +57,7 @@ Being.prototype.serializeBeing = function () {
   };
 
   // serialize ent if it is an Entity, otherwise pass it as-is
-  if (this.ent.serialize) {
+  if (this.ent instanceof SimplePhysics.Entity) {
     result.ent = this.ent.serialize();
   } else {
     result.ent = this.ent;
