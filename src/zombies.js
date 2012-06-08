@@ -407,7 +407,6 @@ var Zombies = (function () {
                   j++;
                 }
                 c.fillText('rpc queue: ' + Rpc.queue.length, 2, 10*j++);
-                c.fillText('digests: ' + lastDigest.digest + ", " + serverDigest.digest, 2, 10*j++);
               });
             }
           break;
