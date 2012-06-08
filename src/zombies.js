@@ -75,11 +75,13 @@ var Zombies = (function () {
     window.onkeydown = keyDown;
     window.onkeyup = keyUp;
 
+    /*
     setInterval(function () {
       socket.emit('digest');
       lastDigest = null;
       serverDigest = null;
     }, 5000);
+    */
   }
 
   function initServer (_io) {
