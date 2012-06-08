@@ -18,6 +18,7 @@ var Renderer = (function () {
     , height = 400
     , offset = { x: 0, y: 0}
     , running = false
+    , _renderCallback = undefined;
     ;
 
   function loadProgress () {
@@ -61,6 +62,14 @@ var Renderer = (function () {
     offset.y = pos.y;
   }
 
+  function renderCallback (cb) {
+    if (cb !== undefined) {
+      _renderCallback = cb;
+    }
+
+    return _renderCallback;
+  }
+
   function render (deltaTime) {
     var i;
     clear();
@@ -76,6 +85,10 @@ var Renderer = (function () {
     }
 
     context.restore();
+
+    if (_renderCallback) {
+      _renderCallback(context);
+    }
   }
 
   function clear () {
@@ -139,7 +152,8 @@ var Renderer = (function () {
     loadLevel: loadLevel,
     loadResources: loadResources,
     sprites: function () { return sprites; },
-    render: render
+    render: render,
+    renderCallback: renderCallback
   };
 
 })();

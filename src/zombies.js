@@ -11,6 +11,7 @@ var Zombies = (function () {
     65: 'left',
     68: 'right',
     74: 'jump',
+    81: 'debug',
     82: 'restore',
     192: 'state'
   };
@@ -74,14 +75,11 @@ var Zombies = (function () {
     window.onkeydown = keyDown;
     window.onkeyup = keyUp;
 
-    // digest testing
-    /*
     setInterval(function () {
       socket.emit('digest');
       lastDigest = null;
       serverDigest = null;
     }, 5000);
-    */
   }
 
   function initServer (_io) {
@@ -327,9 +325,6 @@ var Zombies = (function () {
               digest: physics.digest(),
               frame: frameCount
           };
-
-          if (serverDigest)
-            console.log('check', lastDigest, serverDigest);
         }
       break;
 
@@ -386,6 +381,33 @@ var Zombies = (function () {
 
           case 'state':
             socket.emit('state');
+          break;
+
+          case 'debug':
+            if (Renderer.renderCallback()) {
+              Renderer.renderCallback(false);
+            } else {
+              Renderer.renderCallback(function (c) {
+                var i, j = 1, player;
+                c.fillStyle = 'rgba(0,0,255,.5)';
+                c.fillRect(0,0,200,400);
+                c.fillStyle = '#FFFFFF';
+                for (i = 0; i < Player.list.length; i++) {
+                  player = Player.list[i];
+                  c.fillText(player.name, 2, 10*j++);
+                  c.fillText(player.id, 8, 10*j++);
+                  c.fillText('Me: ' + (Player.me == player), 8, 10*j++);
+                  c.fillText('identity: ' + player.identity, 8, 10*j++);
+                  c.fillText('Ent: ' + player.ent.id, 8, 10*j++);
+                  c.fillText((player.ent.x | 0) + ", " + (player.ent.y | 0), 8, 10*j++);
+                  c.fillText('Sprite: ' + player.sprite.id, 8, 10*j++);
+                  c.fillText('shared ent: ' + (player.ent.id == player.sprite._ent.id), 8, 10*j++);
+                  j++;
+                }
+                c.fillText('rpc queue: ' + Rpc.queue.length, 2, 10*j++);
+                c.fillText('digests: ' + lastDigest.digest + ", " + serverDigest.digest, 2, 10*j++);
+              });
+            }
           break;
 
           default:
