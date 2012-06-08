@@ -24,8 +24,11 @@ function Player (data) {
  */
 Player.fromData = function (data) {
   var player
-    , updating = false // updating an existing player
     ;
+
+  if (Player.list[data.cn] instanceof Player) {
+    Player.list[data.cn].drop();
+  }
 
   player = new Player (data);
 
@@ -36,10 +39,6 @@ Player.fromData = function (data) {
   player.name = data.name || player.name;
   player.id = data.id || player.id;
   player.identity = data.identity;
-
-  if (Player.list[data.cn] instanceof Player) {
-    Player.list[data.cn].drop();
-  }
 
   player.add();
 
