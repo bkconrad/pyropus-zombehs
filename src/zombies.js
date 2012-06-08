@@ -286,7 +286,7 @@ var Zombies = (function () {
     switch (ev.type) {
       case 'join':
 
-        var newPlayer = Player.unserialize(ev.data);
+        var newPlayer = Player.fromData(ev.data);
 
         if (ev.data.identity) {
           me(newPlayer);
@@ -434,8 +434,6 @@ var Zombies = (function () {
     for (i = 0; i < Player.list.length; i++) {
       if (typeof Player.list[i] === "object")
         result.players.push(Player.list[i].serialize());
-      else
-        console.log(typeof Player.list[i]);
     }
     result.frame = frameCount;
 
@@ -453,7 +451,7 @@ var Zombies = (function () {
     }
 
     for (i = 0; i < state.players.length; i++) {
-      Player.unserialize(state.players[i]);
+      Player.fromData(state.players[i]);
     }
 
     frameCount = state.frame;

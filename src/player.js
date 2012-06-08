@@ -19,30 +19,32 @@ function Player (data) {
 
 }
 
-Player.unserialize = function (data) {
-  var player;
+/**
+ * Given data from Player#serialize, create or update a player
+ */
+Player.fromData = function (data) {
+  var player
+    , updating = false // updating an existing player
+    ;
 
-  // find referenced Player, or make a new one
-  if (data.cn && Player.list[data.cn] !== undefined && Player.list[data.cn] !== true) {
-    player = Player.list[data.cn];
-  } else {
-    player = new Player (data);
+  player = new Player (data);
+
+  if (Player.list[player.cn] instanceof Player) {
+    Player.list[player.cn].drop();
   }
 
-  // initialize one
   player.createBeing();
 
-  // update it
+  player.sprite = data.sprite;
+  player.ent = data.ent;
   player.name = data.name || player.name;
   player.id = data.id || player.id;
-  player.sprite = data.sprite || player.sprite;
-  player.ent = data.ent || player.ent;
 
-  // add it
   player.add();
 
-  if (player.sprite)
+  if (player.sprite) {
     player.sprite._ent = player.ent;
+  }
 
   return player;
 };

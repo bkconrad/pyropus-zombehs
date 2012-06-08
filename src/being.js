@@ -21,8 +21,8 @@ Being.prototype.createBeing = function (ent, type) {
     this.ent = ent;
   } else {
     this.ent = {
-      x: Math.random() * 200,
-      y: Math.random() * 200,
+      x: 200,
+      y: 0,
       width: 32,
       height: 32,
       static: false
@@ -35,9 +35,13 @@ Being.prototype.createBeing = function (ent, type) {
 Being.prototype.addBeing = function () {
   this.ent = SimplePhysics.create(this.ent);
 
-  if (Renderer && !this.sprite) {
-    this.sprite = Renderer.add(this.ent, this.type);
+  if (Renderer) {
+    if (!this.sprite) {
+      this.sprite = Renderer.add(this.ent, this.type);
+    }
+    this.sprite._ent = this.ent;
   }
+
   
   return this;
 };
