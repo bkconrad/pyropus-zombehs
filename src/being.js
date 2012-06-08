@@ -40,6 +40,7 @@ Being.prototype.addBeing = function () {
       this.sprite = Renderer.add(this.ent, this.type);
     }
     this.sprite._ent = this.ent;
+    console.log('setting ent');
   }
 
   
@@ -49,7 +50,6 @@ Being.prototype.addBeing = function () {
 Being.prototype.serializeBeing = function () {
   var result = {
     id: this.id,
-    sprite: this.sprite,
     name: this.name
   };
 

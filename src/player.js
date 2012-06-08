@@ -29,25 +29,28 @@ Player.fromData = function (data) {
 
   player = new Player (data);
 
-  if (Player.list[player.cn] instanceof Player) {
-    Player.list[player.cn].drop();
-  }
-
   player.createBeing();
 
-  player.sprite = data.sprite;
-  player.ent = data.ent;
+  player.sprite = data.sprite || player.sprite;
+  player.ent = data.ent || player.ent;
   player.name = data.name || player.name;
   player.id = data.id || player.id;
+  player.identity = data.identity;
+
+  if (Player.list[data.cn] instanceof Player) {
+    Player.list[data.cn].drop();
+  }
 
   player.add();
 
-  if (player.sprite) {
-    player.sprite._ent = player.ent;
+  if (player.identity) {
+    Player.me = player;
   }
 
   return player;
 };
+
+Player.me = undefined;
 
 Player.prototype = Being.prototype;
 
@@ -69,6 +72,7 @@ Player.prototype.add = function () {
 Player.prototype.serialize = function () {
   var result = this.serializeBeing();
   result.cn = this.cn;
+  result.identity = this.identity;
   return result;
 };
 

@@ -33,14 +33,13 @@ var Zombies = (function () {
     , startTime
     , savedState
     , candidateState
-    , maxAge = 2000
-    , minAge = 1000
+    , maxAge = 200
+    , minAge = 100
 
     // client
     , canvas
     , context
     , socket
-    , me_
     , lastDigest
     , serverDigest
     , lastFrame
@@ -83,14 +82,6 @@ var Zombies = (function () {
       serverDigest = null;
     }, 5000);
     */
-  }
-
-  function me (player) {
-    if (player) {
-      me_ = player;
-    }
-    
-    return me_;
   }
 
   function initServer (_io) {
@@ -238,7 +229,7 @@ var Zombies = (function () {
 
     if (!isServer) {
       handleKeys();
-      Renderer.center(me().ent); 
+      Renderer.center(Player.me.sprite._ent); 
       now = new Date().getTime();
       Renderer.render(now - lastFrame);
       lastFrame = now;
@@ -286,11 +277,7 @@ var Zombies = (function () {
     switch (ev.type) {
       case 'join':
 
-        var newPlayer = Player.fromData(ev.data);
-
-        if (ev.data.identity) {
-          me(newPlayer);
-        }
+        Player.fromData(ev.data);
 
       break;
 
@@ -442,13 +429,6 @@ var Zombies = (function () {
 
   function restoreState(state) {
     var i;
-    for (i = 0; i < Player.list.length; i++) {
-
-      // drop player if he exists now, but doesn't in the saved state
-      if (Player.list[i] && !state.players[i]) {
-        Player.list[i].drop();
-      }
-    }
 
     for (i = 0; i < state.players.length; i++) {
       Player.fromData(state.players[i]);
@@ -469,7 +449,7 @@ var Zombies = (function () {
 
   function mkRpc (type, frame, data) {
     var rpc = new Rpc (type, frame || frameCount, data);
-    rpc.from = me_ ? me_.cn : undefined;
+    rpc.from = Player.me ? Player.me.cn : undefined;
     return rpc;
   };
 
